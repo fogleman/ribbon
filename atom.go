@@ -1,7 +1,9 @@
 package ribbon
 
+import "github.com/fogleman/fauxgl"
+
 type Atom struct {
-	Position   Vector
+	Position   fauxgl.Vector
 	Serial     int
 	Name       string
 	ResName    string

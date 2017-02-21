@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"os"
 	"strings"
+
+	"github.com/fogleman/fauxgl"
 )
 
 func LoadPDB(path string) (*Model, error) {
@@ -20,7 +22,7 @@ func LoadPDB(path string) (*Model, error) {
 			x := parseFloat(strings.TrimSpace(line[30:38]))
 			y := parseFloat(strings.TrimSpace(line[38:46]))
 			z := parseFloat(strings.TrimSpace(line[46:54]))
-			atom.Position = Vector{x, y, z}
+			atom.Position = fauxgl.Vector{x, y, z}
 			atom.Serial = parseInt(strings.TrimSpace(line[6:11]))
 			atom.Name = strings.TrimSpace(line[12:16])
 			atom.ResName = strings.TrimSpace(line[17:20])
