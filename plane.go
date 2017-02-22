@@ -10,6 +10,9 @@ type PeptidePlane struct {
 }
 
 func NewPeptidePlane(r1, r2 *Residue) *PeptidePlane {
+	if r1.Chain != r2.Chain {
+		return nil
+	}
 	ca1 := r1.Atoms["CA"]
 	ca2 := r2.Atoms["CA"]
 	o1 := r1.Atoms["O"]
@@ -17,9 +20,6 @@ func NewPeptidePlane(r1, r2 *Residue) *PeptidePlane {
 		return nil
 	}
 	a := ca2.Position.Sub(ca1.Position)
-	if a.Length() > 10 {
-		return nil // TODO: a better way
-	}
 	b := o1.Position.Sub(ca1.Position)
 	c := a.Cross(b)
 	d := c.Cross(a)

@@ -7,6 +7,14 @@ type Polypeptide struct {
 }
 
 func NewPolypeptide(planes []*PeptidePlane) *Polypeptide {
+	// var previous fauxgl.Vector
+	// for i, p := range planes {
+	// 	if i > 0 && p.Side.Dot(previous) < 0 {
+	// 		p.Side = p.Side.Negate()
+	// 		// p.Normal = p.Normal.Negate()
+	// 	}
+	// 	previous = p.Side
+	// }
 	return &Polypeptide{planes}
 }
 
@@ -31,7 +39,7 @@ func PolypeptidesForResidues(residues []*Residue) []*Polypeptide {
 }
 
 func (pp *Polypeptide) Ribbon(width, height float64) *fauxgl.Mesh {
-	const n = 64
+	const n = 16
 	var triangles []*fauxgl.Triangle
 	for i := 0; i < len(pp.PeptidePlanes)-3; i++ {
 		// TODO: handle ends
@@ -45,10 +53,10 @@ func (pp *Polypeptide) Ribbon(width, height float64) *fauxgl.Mesh {
 			for v := 0; v < 2; v++ {
 				w := float64(u*2-1) * width / 2
 				h := float64(v*2-1) * height / 2
-				g0 := p0.Position.Add(p0.Side.MulScalar(w)).Add(p0.Normal.MulScalar(h))
-				g1 := p1.Position.Add(p1.Side.MulScalar(w)).Add(p1.Normal.MulScalar(h))
-				g2 := p2.Position.Add(p2.Side.MulScalar(w)).Add(p2.Normal.MulScalar(h))
-				g3 := p3.Position.Add(p3.Side.MulScalar(w)).Add(p3.Normal.MulScalar(h))
+				g0 := p0.Position.Add(p0.Side.MulScalar(w)).Add(p0.Normal.MulScalar(h + 1.5))
+				g1 := p1.Position.Add(p1.Side.MulScalar(w)).Add(p1.Normal.MulScalar(h + 1.5))
+				g2 := p2.Position.Add(p2.Side.MulScalar(w)).Add(p2.Normal.MulScalar(h + 1.5))
+				g3 := p3.Position.Add(p3.Side.MulScalar(w)).Add(p3.Normal.MulScalar(h + 1.5))
 				splines[u][v] = Spline(g0, g1, g2, g3, n)
 			}
 		}

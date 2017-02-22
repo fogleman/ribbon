@@ -1,17 +1,21 @@
 package ribbon
 
 type Residue struct {
-	Name  string
-	Atoms map[string]*Atom
+	Number int
+	Name   string
+	Chain  string
+	Atoms  map[string]*Atom
 }
 
 func NewResidue(atoms []*Atom) *Residue {
+	number := atoms[0].ResSeq
 	name := atoms[0].ResName
+	chain := atoms[0].ChainID
 	m := make(map[string]*Atom)
 	for _, a := range atoms {
 		m[a.Name] = a
 	}
-	return &Residue{name, m}
+	return &Residue{number, name, chain, m}
 }
 
 func ResiduesForAtoms(atoms []*Atom) []*Residue {

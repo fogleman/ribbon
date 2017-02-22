@@ -13,16 +13,16 @@ import (
 
 const (
 	scale  = 4
-	width  = 1600
-	height = 1200
-	fovy   = 40
+	width  = 2048
+	height = 2048
+	fovy   = 50
 	near   = 1
 	far    = 10
 )
 
 var (
-	eye    = V(3, 1, 0.5)
-	center = V(0, -0.05, -0.05)
+	eye    = V(3, 0, 0)
+	center = V(0, 0, 0)
 	up     = V(0, 0, 1)
 	light  = V(0.75, 0.25, 1).Normalize()
 )
@@ -44,7 +44,7 @@ func main() {
 
 	mesh := NewEmptyMesh()
 	for i, pp := range model.Polypeptides {
-		m := pp.Ribbon(3, 0.5)
+		m := pp.Ribbon(3, 0.25)
 		c := colors[i%len(colors)]
 		for _, t := range m.Triangles {
 			t.V1.Color = c
@@ -55,7 +55,6 @@ func main() {
 	}
 	mesh.BiUnitCube()
 	mesh.SmoothNormalsThreshold(Radians(60))
-	fmt.Println(len(mesh.Triangles))
 
 	// create a rendering context
 	context := NewContext(width*scale, height*scale)
