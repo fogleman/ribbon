@@ -13,7 +13,7 @@ func Spline(v1, v2, v3, v4 fauxgl.Vector, n int) []fauxgl.Vector {
 		0, 0, 0, 1,
 	}
 	b := fauxgl.Matrix{
-		-1, 3, 3, 1,
+		-1, 3, -3, 1,
 		3, -6, 3, 0,
 		-3, 0, 3, 0,
 		1, 4, 1, 0,

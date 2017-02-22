@@ -13,19 +13,27 @@ import (
 
 const (
 	scale  = 4
-	width  = 1600 * 2
-	height = 1200 * 2
-	fovy   = 35
+	width  = 1600
+	height = 1200
+	fovy   = 40
 	near   = 1
 	far    = 10
 )
 
 var (
 	eye    = V(3, 1, 0.5)
-	center = V(0, -0.1, 0)
+	center = V(0, -0.05, -0.05)
 	up     = V(0, 0, 1)
 	light  = V(0.75, 0.25, 1).Normalize()
 )
+
+var colors = []Color{
+	HexColor("7F1637"),
+	HexColor("047878"),
+	HexColor("FFB733"),
+	HexColor("F57336"),
+	HexColor("C22121"),
+}
 
 func main() {
 	model, err := ribbon.LoadPDB(os.Args[1])
@@ -35,8 +43,15 @@ func main() {
 	fmt.Println(len(model.Atoms), len(model.Residues), len(model.Polypeptides))
 
 	mesh := NewEmptyMesh()
-	for _, pp := range model.Polypeptides {
-		mesh.Add(pp.Ribbon(0, 0))
+	for i, pp := range model.Polypeptides {
+		m := pp.Ribbon(3, 0.5)
+		c := colors[i%len(colors)]
+		for _, t := range m.Triangles {
+			t.V1.Color = c
+			t.V2.Color = c
+			t.V3.Color = c
+		}
+		mesh.Add(m)
 	}
 	mesh.BiUnitCube()
 	mesh.SmoothNormalsThreshold(Radians(60))
@@ -52,10 +67,10 @@ func main() {
 
 	// render
 	shader := NewPhongShader(matrix, light, eye)
-	// shader.ObjectColor = HexColor("FFD34E")
+	shader.AmbientColor = Gray(0.3)
+	shader.DiffuseColor = Gray(0.9)
 	context.Shader = shader
 	start := time.Now()
-	// context.Cull = CullNone
 	context.DrawMesh(mesh)
 	fmt.Println(time.Since(start))
 
@@ -63,4 +78,19 @@ func main() {
 	image := context.Image()
 	image = resize.Resize(width, height, image, resize.Bilinear)
 	SavePNG("out.png", image)
+
+	// for i := 0; i < 360; i += 1 {
+	// 	context.ClearColorBufferWith(HexColor("323"))
+	// 	context.ClearDepthBuffer()
+
+	// 	start := time.Now()
+	// 	context.DrawMesh(mesh)
+	// 	fmt.Println(time.Since(start))
+
+	// 	image := context.Image()
+	// 	image = resize.Resize(width, height, image, resize.Bilinear)
+	// 	SavePNG(fmt.Sprintf("frame%03d.png", i), image)
+
+	// 	mesh.Transform(Rotate(up, Radians(1)))
+	// }
 }
