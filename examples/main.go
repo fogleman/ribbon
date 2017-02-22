@@ -24,7 +24,7 @@ var (
 	eye    = V(3, 0, 0)
 	center = V(0, 0, 0)
 	up     = V(0, 0, 1)
-	light  = V(0.75, 0.25, 1).Normalize()
+	light  = V(0.75, 0.25, 0.25).Normalize()
 )
 
 var colors = []Color{
@@ -40,11 +40,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(len(model.Atoms), len(model.Residues), len(model.Polypeptides))
+	fmt.Println(len(model.Atoms), len(model.Residues), len(model.Chains))
 
 	mesh := NewEmptyMesh()
-	for i, pp := range model.Polypeptides {
-		m := pp.Ribbon(3, 0.25)
+	for i, c := range model.Chains {
+		m := c.Ribbon(3, 0.1)
 		c := colors[i%len(colors)]
 		for _, t := range m.Triangles {
 			t.V1.Color = c
@@ -54,7 +54,18 @@ func main() {
 		mesh.Add(m)
 	}
 	mesh.BiUnitCube()
-	mesh.SmoothNormalsThreshold(Radians(60))
+	// mesh.SmoothNormalsThreshold(Radians(90))
+
+	// var edges []*Triangle
+	// for _, t := range mesh.Triangles {
+	// 	n := t.Normal()
+	// 	e1 := math.Abs(t.V1.Position.Sub(eye).Normalize().Dot(n)) < 0.05
+	// 	e2 := math.Abs(t.V2.Position.Sub(eye).Normalize().Dot(n)) < 0.05
+	// 	e3 := math.Abs(t.V3.Position.Sub(eye).Normalize().Dot(n)) < 0.05
+	// 	if e1 && e2 && e3 {
+	// 		edges = append(edges, t)
+	// 	}
+	// }
 
 	// create a rendering context
 	context := NewContext(width*scale, height*scale)
@@ -70,8 +81,13 @@ func main() {
 	shader.DiffuseColor = Gray(0.9)
 	context.Shader = shader
 	start := time.Now()
-	context.DrawMesh(mesh)
+	context.DrawTriangles(mesh.Triangles)
 	fmt.Println(time.Since(start))
+
+	context.Shader = NewSolidColorShader(matrix, Black)
+	context.LineWidth = scale * 1.5
+	context.DepthBias = -5e-4
+	context.DrawLines(mesh.Lines)
 
 	// save image
 	image := context.Image()

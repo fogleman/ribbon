@@ -2,11 +2,11 @@ package ribbon
 
 import "github.com/fogleman/fauxgl"
 
-type Polypeptide struct {
+type Chain struct {
 	PeptidePlanes []*PeptidePlane
 }
 
-func NewPolypeptide(planes []*PeptidePlane) *Polypeptide {
+func NewChain(planes []*PeptidePlane) *Chain {
 	// var previous fauxgl.Vector
 	// for i, p := range planes {
 	// 	if i > 0 && p.Side.Dot(previous) < 0 {
@@ -15,11 +15,11 @@ func NewPolypeptide(planes []*PeptidePlane) *Polypeptide {
 	// 	}
 	// 	previous = p.Side
 	// }
-	return &Polypeptide{planes}
+	return &Chain{planes}
 }
 
-func PolypeptidesForResidues(residues []*Residue) []*Polypeptide {
-	var polypeptides []*Polypeptide
+func ChainsForResidues(residues []*Residue) []*Chain {
+	var chains []*Chain
 	var planes []*PeptidePlane
 	for i := 0; i < len(residues)-1; i++ {
 		r1 := residues[i]
@@ -28,26 +28,27 @@ func PolypeptidesForResidues(residues []*Residue) []*Polypeptide {
 		if p != nil {
 			planes = append(planes, p)
 		} else if planes != nil {
-			polypeptides = append(polypeptides, NewPolypeptide(planes))
+			chains = append(chains, NewChain(planes))
 			planes = nil
 		}
 	}
 	if planes != nil {
-		polypeptides = append(polypeptides, NewPolypeptide(planes))
+		chains = append(chains, NewChain(planes))
 	}
-	return polypeptides
+	return chains
 }
 
-func (pp *Polypeptide) Ribbon(width, height float64) *fauxgl.Mesh {
-	const n = 16
+func (c *Chain) Ribbon(width, height float64) *fauxgl.Mesh {
+	const n = 64
 	var triangles []*fauxgl.Triangle
-	for i := 0; i < len(pp.PeptidePlanes)-3; i++ {
+	var lines []*fauxgl.Line
+	for i := 0; i < len(c.PeptidePlanes)-3; i++ {
 		// TODO: handle ends
 		// TODO: handle plane flips
-		p0 := pp.PeptidePlanes[i]
-		p1 := pp.PeptidePlanes[i+1]
-		p2 := pp.PeptidePlanes[i+2]
-		p3 := pp.PeptidePlanes[i+3]
+		p0 := c.PeptidePlanes[i]
+		p1 := c.PeptidePlanes[i+1]
+		p2 := c.PeptidePlanes[i+2]
+		p3 := c.PeptidePlanes[i+3]
 		var splines [2][2][]fauxgl.Vector
 		for u := 0; u < 2; u++ {
 			for v := 0; v < 2; v++ {
@@ -73,22 +74,17 @@ func (pp *Polypeptide) Ribbon(width, height float64) *fauxgl.Mesh {
 			triangles = triangulateQuad(triangles, p011, p111, p110, p010)
 			triangles = triangulateQuad(triangles, p110, p111, p101, p100)
 			triangles = triangulateQuad(triangles, p000, p001, p011, p010)
+			lines = append(lines, fauxgl.NewLineForPoints(p000, p001))
+			lines = append(lines, fauxgl.NewLineForPoints(p010, p011))
+			lines = append(lines, fauxgl.NewLineForPoints(p100, p101))
+			lines = append(lines, fauxgl.NewLineForPoints(p110, p111))
 		}
 	}
-	return fauxgl.NewTriangleMesh(triangles)
+	return fauxgl.NewMesh(triangles, lines)
 }
 
 func triangulateQuad(triangles []*fauxgl.Triangle, p1, p2, p3, p4 fauxgl.Vector) []*fauxgl.Triangle {
 	triangles = append(triangles, fauxgl.NewTriangleForPoints(p1, p2, p3))
 	triangles = append(triangles, fauxgl.NewTriangleForPoints(p1, p3, p4))
 	return triangles
-}
-
-func makeSegment(p0, p1 fauxgl.Vector, r float64) *fauxgl.Mesh {
-	p := p0.Add(p1).MulScalar(0.5)
-	h := p0.Distance(p1) * 2
-	up := p1.Sub(p0).Normalize()
-	mesh := fauxgl.NewCylinder(30, false)
-	mesh.Transform(fauxgl.Orient(p, fauxgl.V(r, r, h), up, 0))
-	return mesh
 }

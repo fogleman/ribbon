@@ -1,15 +1,15 @@
 package ribbon
 
 type Model struct {
-	Atoms        []*Atom
-	Helixes      []*Helix
-	Strands      []*Strand
-	Residues     []*Residue
-	Polypeptides []*Polypeptide
+	Atoms    []*Atom
+	Helixes  []*Helix
+	Strands  []*Strand
+	Residues []*Residue
+	Chains   []*Chain
 }
 
 func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
 	residues := ResiduesForAtoms(atoms)
-	polypeptides := PolypeptidesForResidues(residues)
-	return &Model{atoms, helixes, strands, residues, polypeptides}
+	chains := ChainsForResidues(residues)
+	return &Model{atoms, helixes, strands, residues, chains}
 }

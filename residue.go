@@ -5,6 +5,7 @@ type Residue struct {
 	Name   string
 	Chain  string
 	Atoms  map[string]*Atom
+	// helix, strand, none
 }
 
 func NewResidue(atoms []*Atom) *Residue {
