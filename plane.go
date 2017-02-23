@@ -25,6 +25,14 @@ func NewPeptidePlane(r1, r2 *Residue) *PeptidePlane {
 	b := o1.Position.Sub(ca1.Position)
 	c := a.Cross(b)
 	d := c.Cross(a)
-	p := ca1.Position.Add(ca2.Position).DivScalar(2)
+	p := ca1.Position //.Add(ca2.Position).DivScalar(2)
 	return &PeptidePlane{r1, r2, p, c.Normalize(), a.Normalize(), d.Normalize()}
+}
+
+func (p *PeptidePlane) Point(v fauxgl.Vector) fauxgl.Vector {
+	result := p.Position
+	result = result.Add(p.Side.MulScalar(v.X))
+	result = result.Add(p.Normal.MulScalar(v.Y))
+	result = result.Add(p.Forward.MulScalar(v.Z))
+	return result
 }

@@ -44,8 +44,8 @@ func main() {
 
 	mesh := NewEmptyMesh()
 	for i, c := range model.Chains {
-		m := c.Ribbon(3, 0.5)
-		c := colors[i%len(colors)]
+		m := c.Ribbon(3, 0.25)
+		c := colors[(i+2)%len(colors)]
 		for _, t := range m.Triangles {
 			t.V1.Color = c
 			t.V2.Color = c
