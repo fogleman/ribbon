@@ -49,15 +49,27 @@ func (c *Chain) Ribbon(width, height float64) *fauxgl.Mesh {
 		p1 := c.PeptidePlanes[i+1]
 		p2 := c.PeptidePlanes[i+2]
 		p3 := c.PeptidePlanes[i+3]
+		r := p1.Residue2
+		// if r.Type != ResidueTypeHelix {
+		// 	continue
+		// }
 		var splines [2][2][]fauxgl.Vector
 		for u := 0; u < 2; u++ {
 			for v := 0; v < 2; v++ {
-				w := float64(u*2-1) * width / 2
-				h := float64(v*2-1) * height / 2
-				g0 := p0.Position.Add(p0.Side.MulScalar(w)).Add(p0.Normal.MulScalar(h + 1.5))
-				g1 := p1.Position.Add(p1.Side.MulScalar(w)).Add(p1.Normal.MulScalar(h + 1.5))
-				g2 := p2.Position.Add(p2.Side.MulScalar(w)).Add(p2.Normal.MulScalar(h + 1.5))
-				g3 := p3.Position.Add(p3.Side.MulScalar(w)).Add(p3.Normal.MulScalar(h + 1.5))
+				w := float64(u*2-1) * 0.25
+				h := float64(v*2-1) * 0.25
+				if r.Type == ResidueTypeHelix {
+					w = float64(u*2-1) * width / 2
+					h = float64(v*2-1) * height / 2
+					h += 1.5
+				} else if r.Type == ResidueTypeStrand {
+					w = float64(u*2-1) * width
+					h = float64(v*2-1) * height / 2
+				}
+				g0 := p0.Position.Add(p0.Side.MulScalar(w)).Add(p0.Normal.MulScalar(h))
+				g1 := p1.Position.Add(p1.Side.MulScalar(w)).Add(p1.Normal.MulScalar(h))
+				g2 := p2.Position.Add(p2.Side.MulScalar(w)).Add(p2.Normal.MulScalar(h))
+				g3 := p3.Position.Add(p3.Side.MulScalar(w)).Add(p3.Normal.MulScalar(h))
 				splines[u][v] = Spline(g0, g1, g2, g3, n)
 			}
 		}
@@ -74,10 +86,12 @@ func (c *Chain) Ribbon(width, height float64) *fauxgl.Mesh {
 			triangles = triangulateQuad(triangles, p011, p111, p110, p010)
 			triangles = triangulateQuad(triangles, p110, p111, p101, p100)
 			triangles = triangulateQuad(triangles, p000, p001, p011, p010)
-			lines = append(lines, fauxgl.NewLineForPoints(p000, p001))
-			lines = append(lines, fauxgl.NewLineForPoints(p010, p011))
-			lines = append(lines, fauxgl.NewLineForPoints(p100, p101))
-			lines = append(lines, fauxgl.NewLineForPoints(p110, p111))
+			if r.Type == ResidueTypeHelix {
+				lines = append(lines, fauxgl.NewLineForPoints(p000, p001))
+				lines = append(lines, fauxgl.NewLineForPoints(p010, p011))
+				lines = append(lines, fauxgl.NewLineForPoints(p100, p101))
+				lines = append(lines, fauxgl.NewLineForPoints(p110, p111))
+			}
 		}
 	}
 	return fauxgl.NewMesh(triangles, lines)

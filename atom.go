@@ -7,7 +7,7 @@ type Atom struct {
 	Serial     int
 	Name       string
 	ResName    string
-	ChainID    string
+	Chain      string
 	ResSeq     int
 	Occupancy  float64
 	TempFactor float64

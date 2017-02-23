@@ -3,6 +3,8 @@ package ribbon
 import "github.com/fogleman/fauxgl"
 
 type PeptidePlane struct {
+	Residue1 *Residue
+	Residue2 *Residue
 	Position fauxgl.Vector
 	Normal   fauxgl.Vector
 	Forward  fauxgl.Vector
@@ -24,5 +26,5 @@ func NewPeptidePlane(r1, r2 *Residue) *PeptidePlane {
 	c := a.Cross(b)
 	d := c.Cross(a)
 	p := ca1.Position.Add(ca2.Position).DivScalar(2)
-	return &PeptidePlane{p, c.Normalize(), a.Normalize(), d.Normalize()}
+	return &PeptidePlane{r1, r2, p, c.Normalize(), a.Normalize(), d.Normalize()}
 }

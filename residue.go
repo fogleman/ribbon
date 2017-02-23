@@ -1,22 +1,31 @@
 package ribbon
 
+type ResidueType int
+
+const (
+	_ ResidueType = iota
+	ResidueTypeOther
+	ResidueTypeHelix
+	ResidueTypeStrand
+)
+
 type Residue struct {
+	Type   ResidueType
 	Number int
 	Name   string
 	Chain  string
 	Atoms  map[string]*Atom
-	// helix, strand, none
 }
 
 func NewResidue(atoms []*Atom) *Residue {
 	number := atoms[0].ResSeq
 	name := atoms[0].ResName
-	chain := atoms[0].ChainID
+	chain := atoms[0].Chain
 	m := make(map[string]*Atom)
 	for _, a := range atoms {
 		m[a.Name] = a
 	}
-	return &Residue{number, name, chain, m}
+	return &Residue{ResidueTypeOther, number, name, chain, m}
 }
 
 func ResiduesForAtoms(atoms []*Atom) []*Residue {

@@ -19,6 +19,10 @@ func LoadPDB(path string) (*Model, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
+		if strings.HasPrefix(line, "ENDMDL") {
+			// TODO: handle multiple models
+			break
+		}
 		if strings.HasPrefix(line, "ATOM  ") {
 			atom := Atom{}
 			x := parseFloat(strings.TrimSpace(line[30:38]))
@@ -28,7 +32,7 @@ func LoadPDB(path string) (*Model, error) {
 			atom.Serial = parseInt(strings.TrimSpace(line[6:11]))
 			atom.Name = strings.TrimSpace(line[12:16])
 			atom.ResName = strings.TrimSpace(line[17:20])
-			atom.ChainID = line[21:22]
+			atom.Chain = line[21:22]
 			atom.ResSeq = parseInt(strings.TrimSpace(line[22:26]))
 			atom.Occupancy = parseFloat(strings.TrimSpace(line[54:60]))
 			atom.TempFactor = parseFloat(strings.TrimSpace(line[60:66]))
@@ -38,12 +42,14 @@ func LoadPDB(path string) (*Model, error) {
 		}
 		if strings.HasPrefix(line, "HELIX ") {
 			helix := Helix{}
+			helix.Chain = line[19:20]
 			helix.Start = parseInt(strings.TrimSpace(line[21:25]))
 			helix.End = parseInt(strings.TrimSpace(line[33:37]))
 			helixes = append(helixes, &helix)
 		}
 		if strings.HasPrefix(line, "SHEET ") {
 			strand := Strand{}
+			strand.Chain = line[21:22]
 			strand.Start = parseInt(strings.TrimSpace(line[22:26]))
 			strand.End = parseInt(strings.TrimSpace(line[33:37]))
 			strands = append(strands, &strand)

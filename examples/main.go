@@ -13,9 +13,9 @@ import (
 
 const (
 	scale  = 4
-	width  = 2048
-	height = 2048
-	fovy   = 50
+	width  = 1600
+	height = 1600
+	fovy   = 45
 	near   = 1
 	far    = 10
 )
@@ -44,7 +44,7 @@ func main() {
 
 	mesh := NewEmptyMesh()
 	for i, c := range model.Chains {
-		m := c.Ribbon(3, 0.1)
+		m := c.Ribbon(3, 0.5)
 		c := colors[i%len(colors)]
 		for _, t := range m.Triangles {
 			t.V1.Color = c
@@ -69,7 +69,7 @@ func main() {
 
 	// create a rendering context
 	context := NewContext(width*scale, height*scale)
-	context.ClearColorBufferWith(HexColor("323"))
+	context.ClearColorBufferWith(HexColor("2A2C2B"))
 
 	// create transformation matrix and light direction
 	aspect := float64(width) / float64(height)
@@ -85,7 +85,7 @@ func main() {
 	fmt.Println(time.Since(start))
 
 	context.Shader = NewSolidColorShader(matrix, Black)
-	context.LineWidth = scale * 1.5
+	context.LineWidth = scale * 2
 	context.DepthBias = -5e-4
 	context.DrawLines(mesh.Lines)
 
