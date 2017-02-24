@@ -53,9 +53,12 @@ func main() {
 		}
 		mesh.Add(m)
 	}
+	fmt.Println(len(mesh.Triangles))
 	mesh.BiUnitCube()
-	mesh.Transform(Rotate(up, Radians(-30)))
-	mesh.Transform(Rotate(V(1, 0, 0), Radians(-60)))
+	// mesh.Transform(Rotate(up, Radians(-30)))
+	// mesh.Transform(Rotate(V(1, 0, 0), Radians(-60)))
+	mesh.SmoothNormalsThreshold(Radians(75))
+	mesh.SaveSTL("out.stl")
 
 	// var edges []*Triangle
 	// for _, t := range mesh.Triangles {
@@ -96,29 +99,29 @@ func main() {
 	image = resize.Resize(width, height, image, resize.Bilinear)
 	SavePNG("out.png", image)
 
-	for i := 0; i < 360; i += 1 {
-		context.ClearColorBufferWith(HexColor("2A2C2B"))
-		context.ClearDepthBuffer()
+	// for i := 0; i < 360; i += 1 {
+	// 	context.ClearColorBufferWith(HexColor("2A2C2B"))
+	// 	context.ClearDepthBuffer()
 
-		shader := NewPhongShader(matrix, light, eye)
-		shader.AmbientColor = Gray(0.3)
-		shader.DiffuseColor = Gray(0.9)
-		context.Shader = shader
-		context.Cull = CullNone
-		start := time.Now()
-		context.DepthBias = 0
-		context.DrawTriangles(mesh.Triangles)
-		fmt.Println(time.Since(start))
+	// 	shader := NewPhongShader(matrix, light, eye)
+	// 	shader.AmbientColor = Gray(0.3)
+	// 	shader.DiffuseColor = Gray(0.9)
+	// 	context.Shader = shader
+	// 	context.Cull = CullNone
+	// 	start := time.Now()
+	// 	context.DepthBias = 0
+	// 	context.DrawTriangles(mesh.Triangles)
+	// 	fmt.Println(time.Since(start))
 
-		context.Shader = NewSolidColorShader(matrix, Black)
-		context.LineWidth = scale * 1.5
-		context.DepthBias = -1e-4
-		context.DrawLines(mesh.Lines)
+	// 	context.Shader = NewSolidColorShader(matrix, Black)
+	// 	context.LineWidth = scale * 1.5
+	// 	context.DepthBias = -1e-4
+	// 	context.DrawLines(mesh.Lines)
 
-		image := context.Image()
-		image = resize.Resize(width, height, image, resize.Bilinear)
-		SavePNG(fmt.Sprintf("frame%03d.png", i), image)
+	// 	image := context.Image()
+	// 	image = resize.Resize(width, height, image, resize.Bilinear)
+	// 	SavePNG(fmt.Sprintf("frame%03d.png", i), image)
 
-		mesh.Transform(Rotate(up, Radians(1)))
-	}
+	// 	mesh.Transform(Rotate(up, Radians(1)))
+	// }
 }
