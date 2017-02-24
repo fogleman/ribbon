@@ -16,6 +16,8 @@ func LoadPDB(path string) (*Model, error) {
 	var atoms []*Atom
 	var helixes []*Helix
 	var strands []*Strand
+	// var bioMatrixes []fauxgl.Matrix
+	// var bioMatrix fauxgl.Matrix
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -23,6 +25,9 @@ func LoadPDB(path string) (*Model, error) {
 			// TODO: handle multiple models
 			break
 		}
+		// if strings.HasPrefix(line, "REMARK 350   BIOMT") {
+		// 	ordinal := parseInt(line[18:19])
+		// }
 		if strings.HasPrefix(line, "ATOM  ") {
 			atom := Atom{}
 			x := parseFloat(strings.TrimSpace(line[30:38]))

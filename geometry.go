@@ -91,39 +91,36 @@ func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 	return result
 }
 
-func geometryProfile(r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
+func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 	switch r1.Type {
 	case ResidueTypeHelix:
-		p1 = roundedRectangleProfile(n, 3, 0.5)
-		p1 = scaleProfile(p1, 0.5)
+		p1 = roundedRectangleProfile(n, 1.5, 0.25)
 		p1 = translateProfile(p1, 0, 1.5)
 	case ResidueTypeStrand:
 		if r2.Type == ResidueTypeStrand {
-			p1 = rectangleProfile(n, 3, 1)
-			p1 = scaleProfile(p1, 0.5)
+			p1 = rectangleProfile(n, 1.5, 0.5)
 		} else {
-			p1 = rectangleProfile(n, 5, 1)
-			p1 = scaleProfile(p1, 0.5)
+			p1 = rectangleProfile(n, 2.5, 0.5)
 		}
 	default:
-		p1 = ellipseProfile(n, 1, 1)
-		p1 = scaleProfile(p1, 0.5)
+		if r0.Type == ResidueTypeStrand {
+			p1 = ellipseProfile(n, 0, 0)
+		} else {
+			p1 = ellipseProfile(n, 0.5, 0.5)
+		}
 	}
 	switch r2.Type {
 	case ResidueTypeHelix:
-		p2 = roundedRectangleProfile(n, 3, 0.5)
-		p2 = scaleProfile(p2, 0.5)
+		p2 = roundedRectangleProfile(n, 1.5, 0.25)
 		p2 = translateProfile(p2, 0, 1.5)
 	case ResidueTypeStrand:
-		p2 = rectangleProfile(n, 3, 1)
-		p2 = scaleProfile(p2, 0.5)
+		p2 = rectangleProfile(n, 1.5, 0.5)
 	default:
 		if r1.Type == ResidueTypeStrand {
-			p2 = ellipseProfile(n, 0, 1)
+			p2 = ellipseProfile(n, 0, 0.5)
 		} else {
-			p2 = ellipseProfile(n, 1, 1)
+			p2 = ellipseProfile(n, 0.5, 0.5)
 		}
-		p2 = scaleProfile(p2, 0.5)
 	}
 	return
 }
@@ -154,10 +151,11 @@ func segmentColors(r1, r2 *Residue) (c1, c2 fauxgl.Color) {
 func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	const splineSteps = 32
 	const profileDetail = 32
+	r0 := pp1.Residue1
 	r1 := pp2.Residue1
 	r2 := pp3.Residue1
 	c1, c2 := segmentColors(r1, r2)
-	profile1, profile2 := geometryProfile(r1, r2, profileDetail)
+	profile1, profile2 := geometryProfile(r0, r1, r2, profileDetail)
 	splines1 := make([][]fauxgl.Vector, len(profile1))
 	splines2 := make([][]fauxgl.Vector, len(profile2))
 	for i := range splines1 {
