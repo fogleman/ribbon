@@ -44,7 +44,7 @@ func main() {
 
 	mesh := NewEmptyMesh()
 	for i, c := range model.Chains {
-		m := c.Ribbon(3, 0.25)
+		m := c.Ribbon(3, 1)
 		c := colors[(i+2)%len(colors)]
 		for _, t := range m.Triangles {
 			t.V1.Color = c
@@ -54,7 +54,8 @@ func main() {
 		mesh.Add(m)
 	}
 	mesh.BiUnitCube()
-	// mesh.SmoothNormalsThreshold(Radians(90))
+	mesh.Transform(Rotate(up, Radians(-30)))
+	mesh.Transform(Rotate(V(1, 0, 0), Radians(-60)))
 
 	// var edges []*Triangle
 	// for _, t := range mesh.Triangles {
@@ -80,13 +81,14 @@ func main() {
 	shader.AmbientColor = Gray(0.3)
 	shader.DiffuseColor = Gray(0.9)
 	context.Shader = shader
+	context.Cull = CullNone
 	start := time.Now()
 	context.DrawTriangles(mesh.Triangles)
 	fmt.Println(time.Since(start))
 
 	context.Shader = NewSolidColorShader(matrix, Black)
-	context.LineWidth = scale * 2
-	context.DepthBias = -5e-4
+	context.LineWidth = scale * 1.5
+	context.DepthBias = -1e-4
 	context.DrawLines(mesh.Lines)
 
 	// save image
@@ -94,18 +96,29 @@ func main() {
 	image = resize.Resize(width, height, image, resize.Bilinear)
 	SavePNG("out.png", image)
 
-	// for i := 0; i < 360; i += 1 {
-	// 	context.ClearColorBufferWith(HexColor("323"))
-	// 	context.ClearDepthBuffer()
+	for i := 0; i < 360; i += 1 {
+		context.ClearColorBufferWith(HexColor("2A2C2B"))
+		context.ClearDepthBuffer()
 
-	// 	start := time.Now()
-	// 	context.DrawMesh(mesh)
-	// 	fmt.Println(time.Since(start))
+		shader := NewPhongShader(matrix, light, eye)
+		shader.AmbientColor = Gray(0.3)
+		shader.DiffuseColor = Gray(0.9)
+		context.Shader = shader
+		context.Cull = CullNone
+		start := time.Now()
+		context.DepthBias = 0
+		context.DrawTriangles(mesh.Triangles)
+		fmt.Println(time.Since(start))
 
-	// 	image := context.Image()
-	// 	image = resize.Resize(width, height, image, resize.Bilinear)
-	// 	SavePNG(fmt.Sprintf("frame%03d.png", i), image)
+		context.Shader = NewSolidColorShader(matrix, Black)
+		context.LineWidth = scale * 1.5
+		context.DepthBias = -1e-4
+		context.DrawLines(mesh.Lines)
 
-	// 	mesh.Transform(Rotate(up, Radians(1)))
-	// }
+		image := context.Image()
+		image = resize.Resize(width, height, image, resize.Bilinear)
+		SavePNG(fmt.Sprintf("frame%03d.png", i), image)
+
+		mesh.Transform(Rotate(up, Radians(1)))
+	}
 }

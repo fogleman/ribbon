@@ -7,14 +7,14 @@ type Chain struct {
 }
 
 func NewChain(planes []*PeptidePlane) *Chain {
-	// var previous fauxgl.Vector
-	// for i, p := range planes {
-	// 	if i > 0 && p.Side.Dot(previous) < 0 {
-	// 		p.Side = p.Side.Negate()
-	// 		// p.Normal = p.Normal.Negate()
-	// 	}
-	// 	previous = p.Side
-	// }
+	var previous fauxgl.Vector
+	for i, p := range planes {
+		if i > 0 && p.Side.Dot(previous) < 0 {
+			p.Side = p.Side.Negate()
+			p.Normal = p.Normal.Negate()
+		}
+		previous = p.Side
+	}
 	return &Chain{planes}
 }
 
@@ -59,7 +59,7 @@ func (c *Chain) Ribbon(width, height float64) *fauxgl.Mesh {
 				h1 := float64(v*2-1) * 0.25
 				if r1.Type == ResidueTypeHelix {
 					w1 = float64(u*2-1) * width / 2
-					h1 = float64(v*2-1) * height / 2
+					h1 = float64(v*2-1) * height / 16
 					h1 += 1.5
 				} else if r1.Type == ResidueTypeStrand {
 					if r2.Type == ResidueTypeStrand {
@@ -74,16 +74,11 @@ func (c *Chain) Ribbon(width, height float64) *fauxgl.Mesh {
 				h2 := float64(v*2-1) * 0.25
 				if r2.Type == ResidueTypeHelix {
 					w2 = float64(u*2-1) * width / 2
-					h2 = float64(v*2-1) * height / 2
+					h2 = float64(v*2-1) * height / 16
 					h2 += 1.5
 				} else if r2.Type == ResidueTypeStrand {
-					// if r1.Type == ResidueTypeStrand {
-					// 	w2 = float64(u*2-1) * width / 2
-					// 	h2 = float64(v*2-1) * height / 2
-					// } else {
 					w2 = float64(u*2-1) * width / 2
 					h2 = float64(v*2-1) * height / 2
-					// }
 				}
 				splines1[u][v] = SplineForPlanes(p0, p1, p2, p3, n, w1, h1)
 				splines2[u][v] = SplineForPlanes(p0, p1, p2, p3, n, w2, h2)
@@ -92,6 +87,18 @@ func (c *Chain) Ribbon(width, height float64) *fauxgl.Mesh {
 		for j := 0; j < n; j++ {
 			t1 := float64(j) / float64(n)
 			t2 := float64(j+1) / float64(n)
+			if r2.Type == ResidueTypeStrand && r1.Type != ResidueTypeStrand {
+				if t1 < 0.5 {
+					t1 = 0
+				} else {
+					t1 = 1
+				}
+				if t2 < 0.5 {
+					t2 = 0
+				} else {
+					t2 = 1
+				}
+			}
 			p000 := splines1[0][0][j].Lerp(splines2[0][0][j], t1)
 			p001 := splines1[0][0][j+1].Lerp(splines2[0][0][j+1], t2)
 			p010 := splines1[0][1][j].Lerp(splines2[0][1][j], t1)
