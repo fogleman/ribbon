@@ -13,27 +13,19 @@ import (
 
 const (
 	scale  = 4
-	width  = 1600
-	height = 1600
-	fovy   = 45
+	width  = 2560
+	height = 1440
+	fovy   = 24
 	near   = 1
 	far    = 10
 )
 
 var (
 	eye    = V(3, 0, 0)
-	center = V(0, 0, 0)
-	up     = V(0, 0, 1)
+	center = V(0, 0, 0.125)
+	up     = V(0, 1, 0)
 	light  = V(0.75, 0.25, 0.25).Normalize()
 )
-
-var colors = []Color{
-	HexColor("7F1637"),
-	HexColor("047878"),
-	HexColor("FFB733"),
-	HexColor("F57336"),
-	HexColor("C22121"),
-}
 
 func main() {
 	model, err := ribbon.LoadPDB(os.Args[1])
@@ -43,15 +35,8 @@ func main() {
 	fmt.Println(len(model.Atoms), len(model.Residues), len(model.Chains))
 
 	mesh := NewEmptyMesh()
-	for i, c := range model.Chains {
-		m := c.Ribbon(3, 1)
-		c := colors[(i+2)%len(colors)]
-		for _, t := range m.Triangles {
-			t.V1.Color = c
-			t.V2.Color = c
-			t.V3.Color = c
-		}
-		mesh.Add(m)
+	for _, c := range model.Chains {
+		mesh.Add(c.Mesh())
 	}
 	fmt.Println(len(mesh.Triangles))
 	mesh.BiUnitCube()
@@ -89,10 +74,16 @@ func main() {
 	context.DrawTriangles(mesh.Triangles)
 	fmt.Println(time.Since(start))
 
-	context.Shader = NewSolidColorShader(matrix, Black)
-	context.LineWidth = scale * 1.5
-	context.DepthBias = -1e-4
-	context.DrawLines(mesh.Lines)
+	context.ClearDepthBuffer()
+	start = time.Now()
+	context.Cull = CullBack
+	context.DrawTriangles(mesh.Triangles)
+	fmt.Println(time.Since(start))
+
+	// context.Shader = NewSolidColorShader(matrix, Black)
+	// context.LineWidth = scale * 1.5
+	// context.DepthBias = -1e-4
+	// context.DrawLines(mesh.Lines)
 
 	// save image
 	image := context.Image()

@@ -75,6 +75,14 @@ func roundedRectangleProfile(n int, w, h float64) []fauxgl.Vector {
 	return result
 }
 
+func scaleProfile(p []fauxgl.Vector, s float64) []fauxgl.Vector {
+	result := make([]fauxgl.Vector, len(p))
+	for i := range result {
+		result[i] = p[i].MulScalar(s)
+	}
+	return result
+}
+
 func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 	result := make([]fauxgl.Vector, len(p))
 	for i := range result {
@@ -87,24 +95,58 @@ func geometryProfile(r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 	switch r1.Type {
 	case ResidueTypeHelix:
 		p1 = roundedRectangleProfile(n, 3, 0.5)
+		p1 = scaleProfile(p1, 0.5)
 		p1 = translateProfile(p1, 0, 1.5)
 	case ResidueTypeStrand:
 		if r2.Type == ResidueTypeStrand {
 			p1 = rectangleProfile(n, 3, 1)
+			p1 = scaleProfile(p1, 0.5)
 		} else {
-			p1 = rectangleProfile(n, 4.5, 1)
+			p1 = rectangleProfile(n, 5, 1)
+			p1 = scaleProfile(p1, 0.5)
 		}
 	default:
 		p1 = ellipseProfile(n, 1, 1)
+		p1 = scaleProfile(p1, 0.5)
 	}
 	switch r2.Type {
 	case ResidueTypeHelix:
 		p2 = roundedRectangleProfile(n, 3, 0.5)
+		p2 = scaleProfile(p2, 0.5)
 		p2 = translateProfile(p2, 0, 1.5)
 	case ResidueTypeStrand:
 		p2 = rectangleProfile(n, 3, 1)
+		p2 = scaleProfile(p2, 0.5)
 	default:
-		p2 = ellipseProfile(n, 1, 1)
+		if r1.Type == ResidueTypeStrand {
+			p2 = ellipseProfile(n, 0, 1)
+		} else {
+			p2 = ellipseProfile(n, 1, 1)
+		}
+		p2 = scaleProfile(p2, 0.5)
+	}
+	return
+}
+
+func segmentColors(r1, r2 *Residue) (c1, c2 fauxgl.Color) {
+	switch r1.Type {
+	case ResidueTypeHelix:
+		c1 = fauxgl.HexColor("FFB733")
+	case ResidueTypeStrand:
+		c1 = fauxgl.HexColor("F57336")
+	default:
+		c1 = fauxgl.HexColor("047878")
+	}
+	switch r2.Type {
+	case ResidueTypeHelix:
+		c2 = fauxgl.HexColor("FFB733")
+	case ResidueTypeStrand:
+		c2 = fauxgl.HexColor("F57336")
+	default:
+		c2 = fauxgl.HexColor("047878")
+	}
+	if r1.Type == ResidueTypeStrand {
+		c2 = c1
 	}
 	return
 }
@@ -114,6 +156,7 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	const profileDetail = 32
 	r1 := pp2.Residue1
 	r2 := pp3.Residue1
+	c1, c2 := segmentColors(r1, r2)
 	profile1, profile2 := geometryProfile(r1, r2, profileDetail)
 	splines1 := make([][]fauxgl.Vector, len(profile1))
 	splines2 := make([][]fauxgl.Vector, len(profile2))
@@ -128,7 +171,7 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	for i := 0; i < splineSteps; i++ {
 		t0 := float64(i) / splineSteps
 		t1 := float64(i+1) / splineSteps
-		if r2.Type == ResidueTypeStrand && r1.Type != ResidueTypeStrand {
+		if r2.Type == ResidueTypeStrand && r1.Type == ResidueTypeOther {
 			if t0 < 0.5 {
 				t0 = 0
 			} else {
@@ -153,14 +196,26 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 			p01 := p101.Lerp(p201, t1)
 			p10 := p110.Lerp(p210, t0)
 			p11 := p111.Lerp(p211, t1)
-			triangles = triangulateQuad(triangles, p10, p11, p01, p00)
+			c00 := c1.Lerp(c2, t0)
+			c01 := c1.Lerp(c2, t1)
+			c10 := c1.Lerp(c2, t0)
+			c11 := c1.Lerp(c2, t1)
+			triangles = triangulateQuad(triangles, p10, p11, p01, p00, c10, c11, c01, c00)
 		}
 	}
 	return fauxgl.NewMesh(triangles, lines)
 }
 
-func triangulateQuad(triangles []*fauxgl.Triangle, p1, p2, p3, p4 fauxgl.Vector) []*fauxgl.Triangle {
-	triangles = append(triangles, fauxgl.NewTriangleForPoints(p1, p2, p3))
-	triangles = append(triangles, fauxgl.NewTriangleForPoints(p1, p3, p4))
+func triangulateQuad(triangles []*fauxgl.Triangle, p1, p2, p3, p4 fauxgl.Vector, c1, c2, c3, c4 fauxgl.Color) []*fauxgl.Triangle {
+	t1 := fauxgl.NewTriangleForPoints(p1, p2, p3)
+	t1.V1.Color = c1
+	t1.V2.Color = c2
+	t1.V3.Color = c3
+	t2 := fauxgl.NewTriangleForPoints(p1, p3, p4)
+	t2.V1.Color = c1
+	t2.V2.Color = c3
+	t2.V3.Color = c4
+	triangles = append(triangles, t1)
+	triangles = append(triangles, t2)
 	return triangles
 }

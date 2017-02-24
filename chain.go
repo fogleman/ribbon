@@ -38,7 +38,7 @@ func ChainsForResidues(residues []*Residue) []*Chain {
 	return chains
 }
 
-func (c *Chain) Ribbon(width, height float64) *fauxgl.Mesh {
+func (c *Chain) Mesh() *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	for i := 0; i < len(c.PeptidePlanes)-3; i++ {
 		// TODO: handle ends
