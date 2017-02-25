@@ -95,7 +95,7 @@ func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 	switch r1.Type {
 	case ResidueTypeHelix:
 		p1 = roundedRectangleProfile(n, 1.5, 0.25)
-		p1 = translateProfile(p1, 0, 1.5)
+		// p1 = translateProfile(p1, 0, 1.5)
 	case ResidueTypeStrand:
 		if r2.Type == ResidueTypeStrand {
 			p1 = rectangleProfile(n, 1.5, 0.5)
@@ -112,7 +112,7 @@ func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 	switch r2.Type {
 	case ResidueTypeHelix:
 		p2 = roundedRectangleProfile(n, 1.5, 0.25)
-		p2 = translateProfile(p2, 0, 1.5)
+		// p2 = translateProfile(p2, 0, 1.5)
 	case ResidueTypeStrand:
 		p2 = rectangleProfile(n, 1.5, 0.5)
 	default:
@@ -169,6 +169,10 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	for i := 0; i < splineSteps; i++ {
 		t0 := float64(i) / splineSteps
 		t1 := float64(i+1) / splineSteps
+		if !(r1.Type == ResidueTypeStrand && r2.Type != ResidueTypeStrand) {
+			t0 = easeInOutQuad(t0)
+			t1 = easeInOutQuad(t1)
+		}
 		if r2.Type == ResidueTypeStrand && r1.Type == ResidueTypeOther {
 			if t0 < 0.5 {
 				t0 = 0
@@ -216,4 +220,14 @@ func triangulateQuad(triangles []*fauxgl.Triangle, p1, p2, p3, p4 fauxgl.Vector,
 	triangles = append(triangles, t1)
 	triangles = append(triangles, t2)
 	return triangles
+}
+
+// TODO: make an easing package
+func easeInOutQuad(t float64) float64 {
+	if t < 0.5 {
+		return 2 * t * t
+	} else {
+		t = t*2 - 1
+		return -0.5 * (t*(t-2) - 1)
+	}
 }

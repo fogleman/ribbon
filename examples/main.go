@@ -13,17 +13,17 @@ import (
 
 const (
 	scale  = 4
-	width  = 2560
-	height = 1440
-	fovy   = 24
+	width  = 1600 * 2
+	height = 2400 * 2
+	fovy   = 30
 	near   = 1
 	far    = 10
 )
 
 var (
-	eye    = V(3, 0, 0)
-	center = V(0, 0, 0.125)
-	up     = V(0, 1, 0)
+	eye    = V(4, 0, 0)
+	center = V(0, 0, 0)
+	up     = V(0, 0, 1)
 	light  = V(0.75, 0.25, 0.25).Normalize()
 )
 
@@ -42,8 +42,8 @@ func main() {
 	mesh.BiUnitCube()
 	// mesh.Transform(Rotate(up, Radians(-30)))
 	// mesh.Transform(Rotate(V(1, 0, 0), Radians(-60)))
-	mesh.SmoothNormalsThreshold(Radians(75))
-	mesh.SaveSTL("out.stl")
+	// mesh.SmoothNormalsThreshold(Radians(75))
+	// mesh.SaveSTL("out.stl")
 
 	// var edges []*Triangle
 	// for _, t := range mesh.Triangles {
