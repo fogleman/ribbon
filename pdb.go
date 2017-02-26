@@ -16,8 +16,9 @@ func LoadPDB(path string) (*Model, error) {
 	var atoms []*Atom
 	var helixes []*Helix
 	var strands []*Strand
-	// var bioMatrixes []fauxgl.Matrix
-	// var matrix fauxgl.Matrix
+	var biologicalMatrixes []fauxgl.Matrix
+	var symmetryMatrixes []fauxgl.Matrix
+	var m [4][4]float64
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -25,9 +26,36 @@ func LoadPDB(path string) (*Model, error) {
 			// TODO: handle multiple models
 			break
 		}
-		// if strings.HasPrefix(line, "REMARK 350   BIOMT") {
-		// 	ordinal := parseInt(line[18:19])
-		// }
+		if strings.HasPrefix(line, "REMARK 350   BIOMT") {
+			row := parseInt(line[18:19]) - 1
+			m[row][0] = parseFloat(strings.TrimSpace(line[23:33]))
+			m[row][1] = parseFloat(strings.TrimSpace(line[33:43]))
+			m[row][2] = parseFloat(strings.TrimSpace(line[43:53]))
+			m[row][3] = parseFloat(strings.TrimSpace(line[53:68]))
+			if row == 2 {
+				biologicalMatrixes = append(biologicalMatrixes, fauxgl.Matrix{
+					m[0][0], m[0][1], m[0][2], m[0][3],
+					m[1][0], m[1][1], m[1][2], m[1][3],
+					m[2][0], m[2][1], m[2][2], m[2][3],
+					0, 0, 0, 1,
+				})
+			}
+		}
+		if strings.HasPrefix(line, "REMARK 290   SMTRY") {
+			row := parseInt(line[18:19]) - 1
+			m[row][0] = parseFloat(strings.TrimSpace(line[23:33]))
+			m[row][1] = parseFloat(strings.TrimSpace(line[33:43]))
+			m[row][2] = parseFloat(strings.TrimSpace(line[43:53]))
+			m[row][3] = parseFloat(strings.TrimSpace(line[53:68]))
+			if row == 2 {
+				symmetryMatrixes = append(symmetryMatrixes, fauxgl.Matrix{
+					m[0][0], m[0][1], m[0][2], m[0][3],
+					m[1][0], m[1][1], m[1][2], m[1][3],
+					m[2][0], m[2][1], m[2][2], m[2][3],
+					0, 0, 0, 1,
+				})
+			}
+		}
 		if strings.HasPrefix(line, "ATOM  ") {
 			atom := Atom{}
 			x := parseFloat(strings.TrimSpace(line[30:38]))
