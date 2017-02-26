@@ -149,8 +149,8 @@ func segmentColors(r1, r2 *Residue) (c1, c2 fauxgl.Color) {
 }
 
 func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
-	const splineSteps = 32
-	const profileDetail = 32
+	const splineSteps = 16
+	const profileDetail = 16
 	r0 := pp1.Residue1
 	r1 := pp2.Residue1
 	r2 := pp3.Residue1
@@ -161,8 +161,8 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	for i := range splines1 {
 		p1 := profile1[i]
 		p2 := profile2[i]
-		splines1[i] = SplineForPlanes(pp1, pp2, pp3, pp4, splineSteps, p1.X, p1.Y)
-		splines2[i] = SplineForPlanes(pp1, pp2, pp3, pp4, splineSteps, p2.X, p2.Y)
+		splines1[i] = splineForPlanes(pp1, pp2, pp3, pp4, splineSteps, p1.X, p1.Y)
+		splines2[i] = splineForPlanes(pp1, pp2, pp3, pp4, splineSteps, p2.X, p2.Y)
 	}
 	var triangles []*fauxgl.Triangle
 	var lines []*fauxgl.Line

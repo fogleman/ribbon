@@ -2,15 +2,15 @@ package ribbon
 
 import "github.com/fogleman/fauxgl"
 
-func SplineForPlanes(p1, p2, p3, p4 *PeptidePlane, n int, u, v float64) []fauxgl.Vector {
+func splineForPlanes(p1, p2, p3, p4 *PeptidePlane, n int, u, v float64) []fauxgl.Vector {
 	g1 := p1.Position.Add(p1.Side.MulScalar(u)).Add(p1.Normal.MulScalar(v))
 	g2 := p2.Position.Add(p2.Side.MulScalar(u)).Add(p2.Normal.MulScalar(v))
 	g3 := p3.Position.Add(p3.Side.MulScalar(u)).Add(p3.Normal.MulScalar(v))
 	g4 := p4.Position.Add(p4.Side.MulScalar(u)).Add(p4.Normal.MulScalar(v))
-	return Spline(g1, g2, g3, g4, n)
+	return spline(g1, g2, g3, g4, n)
 }
 
-func Spline(v1, v2, v3, v4 fauxgl.Vector, n int) []fauxgl.Vector {
+func spline(v1, v2, v3, v4 fauxgl.Vector, n int) []fauxgl.Vector {
 	n1 := float64(n)
 	n2 := float64(n * n)
 	n3 := float64(n * n * n)

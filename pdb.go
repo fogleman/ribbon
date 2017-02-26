@@ -17,7 +17,7 @@ func LoadPDB(path string) (*Model, error) {
 	var helixes []*Helix
 	var strands []*Strand
 	// var bioMatrixes []fauxgl.Matrix
-	// var bioMatrix fauxgl.Matrix
+	// var matrix fauxgl.Matrix
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()

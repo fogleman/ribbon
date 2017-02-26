@@ -13,8 +13,8 @@ import (
 
 const (
 	scale  = 4
-	width  = 1600 * 2
-	height = 2400 * 2
+	width  = 1024 * 2
+	height = 1024 * 2
 	fovy   = 30
 	near   = 1
 	far    = 10
@@ -40,21 +40,8 @@ func main() {
 	}
 	fmt.Println(len(mesh.Triangles))
 	mesh.BiUnitCube()
-	// mesh.Transform(Rotate(up, Radians(-30)))
-	// mesh.Transform(Rotate(V(1, 0, 0), Radians(-60)))
 	// mesh.SmoothNormalsThreshold(Radians(75))
-	// mesh.SaveSTL("out.stl")
-
-	// var edges []*Triangle
-	// for _, t := range mesh.Triangles {
-	// 	n := t.Normal()
-	// 	e1 := math.Abs(t.V1.Position.Sub(eye).Normalize().Dot(n)) < 0.05
-	// 	e2 := math.Abs(t.V2.Position.Sub(eye).Normalize().Dot(n)) < 0.05
-	// 	e3 := math.Abs(t.V3.Position.Sub(eye).Normalize().Dot(n)) < 0.05
-	// 	if e1 && e2 && e3 {
-	// 		edges = append(edges, t)
-	// 	}
-	// }
+	mesh.SaveSTL("out.stl")
 
 	// create a rendering context
 	context := NewContext(width*scale, height*scale)
@@ -69,7 +56,7 @@ func main() {
 	shader.AmbientColor = Gray(0.3)
 	shader.DiffuseColor = Gray(0.9)
 	context.Shader = shader
-	context.Cull = CullNone
+	context.Cull = CullFront
 	start := time.Now()
 	context.DrawTriangles(mesh.Triangles)
 	fmt.Println(time.Since(start))
@@ -81,9 +68,10 @@ func main() {
 	fmt.Println(time.Since(start))
 
 	// context.Shader = NewSolidColorShader(matrix, Black)
-	// context.LineWidth = scale * 1.5
+	// context.LineWidth = scale / 2
 	// context.DepthBias = -1e-4
-	// context.DrawLines(mesh.Lines)
+	// context.Wireframe = true
+	// context.DrawTriangles(mesh.Triangles)
 
 	// save image
 	image := context.Image()
