@@ -1,11 +1,15 @@
 package ribbon
 
+import "github.com/fogleman/fauxgl"
+
 type Model struct {
-	Atoms    []*Atom
-	Helixes  []*Helix
-	Strands  []*Strand
-	Residues []*Residue
-	Chains   []*Chain
+	Atoms              []*Atom
+	Helixes            []*Helix
+	Strands            []*Strand
+	Residues           []*Residue
+	Chains             []*Chain
+	BiologicalMatrixes []fauxgl.Matrix
+	SymmetryMatrixes   []fauxgl.Matrix
 }
 
 func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
@@ -23,5 +27,5 @@ func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
 			}
 		}
 	}
-	return &Model{atoms, helixes, strands, residues, chains}
+	return &Model{atoms, helixes, strands, residues, chains, nil, nil}
 }

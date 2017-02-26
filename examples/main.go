@@ -21,10 +21,10 @@ const (
 )
 
 var (
-	eye    = V(4, 0, 0)
+	eye    = V(0, 0, 4)
 	center = V(0, 0, 0)
-	up     = V(0, 0, 1)
-	light  = V(0.75, 0.25, 0.25).Normalize()
+	up     = V(0, 1, 0)
+	light  = V(0.5, 0.25, 0.75).Normalize()
 )
 
 func main() {
@@ -39,6 +39,21 @@ func main() {
 		mesh.Add(c.Mesh())
 	}
 	fmt.Println(len(mesh.Triangles))
+
+	base := mesh.Copy()
+	for i, matrix := range model.SymmetryMatrixes {
+		if matrix == Identity() {
+			continue
+		}
+		if i > 2 {
+			continue
+		}
+		m := base.Copy()
+		m.Transform(matrix)
+		mesh.Add(m)
+	}
+	fmt.Println(len(mesh.Triangles))
+
 	mesh.BiUnitCube()
 	// mesh.SmoothNormalsThreshold(Radians(75))
 	mesh.SaveSTL("out.stl")

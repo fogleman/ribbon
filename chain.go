@@ -7,6 +7,18 @@ type Chain struct {
 }
 
 func NewChain(planes []*PeptidePlane) *Chain {
+	before := planes[1].Position.Sub(planes[0].Position)
+	before1 := *planes[0]
+	before2 := *planes[0]
+	before1.Position = before1.Position.Sub(before)
+	before2.Position = before1.Position.Sub(before)
+	after := planes[len(planes)-1].Position.Sub(planes[len(planes)-2].Position)
+	after1 := *planes[len(planes)-1]
+	after2 := *planes[len(planes)-1]
+	after1.Position = after1.Position.Add(after)
+	after2.Position = after1.Position.Add(after)
+	planes = append([]*PeptidePlane{&before2, &before1}, planes...)
+	planes = append(planes, &after1, &after2)
 	var previous fauxgl.Vector
 	for i, p := range planes {
 		if i > 0 && p.Side.Dot(previous) < 0 {
@@ -41,7 +53,7 @@ func ChainsForResidues(residues []*Residue) []*Chain {
 func (c *Chain) Mesh() *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	for i := 0; i < len(c.PeptidePlanes)-3; i++ {
-		// TODO: handle ends
+		// TODO: handle ends better
 		pp1 := c.PeptidePlanes[i]
 		pp2 := c.PeptidePlanes[i+1]
 		pp3 := c.PeptidePlanes[i+2]

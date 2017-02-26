@@ -92,5 +92,7 @@ func LoadPDB(path string) (*Model, error) {
 		return nil, err
 	}
 	model := NewModel(atoms, helixes, strands)
+	model.BiologicalMatrixes = biologicalMatrixes
+	model.SymmetryMatrixes = symmetryMatrixes
 	return model, nil
 }
