@@ -98,7 +98,7 @@ func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 	const ribbonOffset = 0
 	const arrowHeadWidth = 2.5
 	const arrowWidth = 1.5
-	const arrowHeight = 0.5
+	const arrowHeight = 1
 	const tubeSize = 0.75
 	switch r1.Type {
 	case ResidueTypeHelix:
