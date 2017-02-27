@@ -13,18 +13,18 @@ import (
 
 const (
 	scale  = 4
-	width  = 1200 * 1
-	height = 2000 * 1
+	width  = 1800 * 2
+	height = 1200 * 2
 	fovy   = 30
 	near   = 1
 	far    = 10
 )
 
 var (
-	eye    = V(4, 0, 0)
-	center = V(0, 0, 0)
-	up     = V(0, 0, 1)
-	light  = V(0.75, 0.25, 0.25).Normalize()
+	eye    = V(0, -4, 0)
+	center = V(0.15, 0, 0.15)
+	up     = V(-1, 0, -1).Normalize()
+	light  = V(0.25, -0.75, 0.25).Normalize()
 )
 
 func main() {
@@ -46,9 +46,10 @@ func main() {
 		// 	t.V3.Color = color
 		// }
 		mesh.Add(m)
+		break
 	}
 	fmt.Println(len(mesh.Triangles))
-	// mesh.Transform(Rotate(up, Radians(-45)))
+	mesh.Transform(Rotate(up, Radians(200)))
 
 	// base := mesh.Copy()
 	// for _, matrix := range model.SymmetryMatrixes {

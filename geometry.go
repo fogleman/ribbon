@@ -93,34 +93,41 @@ func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 }
 
 func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
+	const ribbonWidth = 2
+	const ribbonHeight = 0.125
+	const ribbonOffset = 0
+	const arrowHeadWidth = 2.5
+	const arrowWidth = 1.5
+	const arrowHeight = 0.5
+	const tubeSize = 0.75
 	switch r1.Type {
 	case ResidueTypeHelix:
-		p1 = roundedRectangleProfile(n, 1.5, 0.25)
-		// p1 = translateProfile(p1, 0, 1.5)
+		p1 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
+		p1 = translateProfile(p1, 0, ribbonOffset)
 	case ResidueTypeStrand:
 		if r2.Type == ResidueTypeStrand {
-			p1 = rectangleProfile(n, 1.5, 0.5)
+			p1 = rectangleProfile(n, arrowWidth, arrowHeight)
 		} else {
-			p1 = rectangleProfile(n, 2.5, 0.5)
+			p1 = rectangleProfile(n, arrowHeadWidth, arrowHeight)
 		}
 	default:
 		if r0.Type == ResidueTypeStrand {
 			p1 = ellipseProfile(n, 0, 0)
 		} else {
-			p1 = ellipseProfile(n, 0.5, 0.5)
+			p1 = ellipseProfile(n, tubeSize, tubeSize)
 		}
 	}
 	switch r2.Type {
 	case ResidueTypeHelix:
-		p2 = roundedRectangleProfile(n, 1.5, 0.25)
-		// p2 = translateProfile(p2, 0, 1.5)
+		p2 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
+		p2 = translateProfile(p2, 0, ribbonOffset)
 	case ResidueTypeStrand:
-		p2 = rectangleProfile(n, 1.5, 0.5)
+		p2 = rectangleProfile(n, arrowWidth, arrowHeight)
 	default:
-		p2 = ellipseProfile(n, 0.5, 0.5)
+		p2 = ellipseProfile(n, tubeSize, tubeSize)
 	}
 	if r1.Type == ResidueTypeStrand && r2.Type != ResidueTypeStrand {
-		p2 = ellipseProfile(n, 0, 0.5)
+		p2 = ellipseProfile(n, 0, arrowHeight)
 	}
 	return
 }
@@ -149,8 +156,8 @@ func segmentColors(r1, r2 *Residue) (c1, c2 fauxgl.Color) {
 }
 
 func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
-	const splineSteps = 16
-	const profileDetail = 16
+	const splineSteps = 32
+	const profileDetail = 32
 	r0 := pp1.Residue1
 	r1 := pp2.Residue1
 	r2 := pp3.Residue1
