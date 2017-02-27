@@ -13,21 +13,23 @@ import (
 
 const (
 	scale  = 4
-	width  = 1024 * 2
-	height = 1024 * 2
+	width  = 1200 * 1
+	height = 2000 * 1
 	fovy   = 30
 	near   = 1
 	far    = 10
 )
 
 var (
-	eye    = V(0, 0, 4)
+	eye    = V(4, 0, 0)
 	center = V(0, 0, 0)
-	up     = V(0, 1, 0)
-	light  = V(0.5, 0.25, 0.75).Normalize()
+	up     = V(0, 0, 1)
+	light  = V(0.75, 0.25, 0.25).Normalize()
 )
 
 func main() {
+	// rand.Seed(time.Now().UTC().UnixNano())
+
 	model, err := ribbon.LoadPDB(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
@@ -36,23 +38,28 @@ func main() {
 
 	mesh := NewEmptyMesh()
 	for _, c := range model.Chains {
-		mesh.Add(c.Mesh())
-	}
-	fmt.Println(len(mesh.Triangles))
-
-	base := mesh.Copy()
-	for i, matrix := range model.SymmetryMatrixes {
-		if matrix == Identity() {
-			continue
-		}
-		if i > 2 {
-			continue
-		}
-		m := base.Copy()
-		m.Transform(matrix)
+		m := c.Mesh()
+		// color := Color{rand.Float64(), rand.Float64(), rand.Float64(), 1}
+		// for _, t := range m.Triangles {
+		// 	t.V1.Color = color
+		// 	t.V2.Color = color
+		// 	t.V3.Color = color
+		// }
 		mesh.Add(m)
 	}
 	fmt.Println(len(mesh.Triangles))
+	// mesh.Transform(Rotate(up, Radians(-45)))
+
+	// base := mesh.Copy()
+	// for _, matrix := range model.SymmetryMatrixes {
+	// 	if matrix == Identity() {
+	// 		continue
+	// 	}
+	// 	m := base.Copy()
+	// 	m.Transform(matrix)
+	// 	mesh.Add(m)
+	// }
+	// fmt.Println(len(mesh.Triangles))
 
 	mesh.BiUnitCube()
 	// mesh.SmoothNormalsThreshold(Radians(75))
@@ -60,7 +67,7 @@ func main() {
 
 	// create a rendering context
 	context := NewContext(width*scale, height*scale)
-	context.ClearColorBufferWith(HexColor("2A2C2B"))
+	context.ClearColorBufferWith(HexColor("1D181F"))
 
 	// create transformation matrix and light direction
 	aspect := float64(width) / float64(height)

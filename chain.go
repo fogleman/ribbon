@@ -7,18 +7,18 @@ type Chain struct {
 }
 
 func NewChain(planes []*PeptidePlane) *Chain {
-	before := planes[1].Position.Sub(planes[0].Position)
-	before1 := *planes[0]
-	before2 := *planes[0]
-	before1.Position = before1.Position.Sub(before)
-	before2.Position = before1.Position.Sub(before)
-	after := planes[len(planes)-1].Position.Sub(planes[len(planes)-2].Position)
-	after1 := *planes[len(planes)-1]
-	after2 := *planes[len(planes)-1]
-	after1.Position = after1.Position.Add(after)
-	after2.Position = after1.Position.Add(after)
-	planes = append([]*PeptidePlane{&before2, &before1}, planes...)
-	planes = append(planes, &after1, &after2)
+	// before := planes[1].Position.Sub(planes[0].Position)
+	// before1 := *planes[0]
+	// before2 := *planes[0]
+	// before1.Position = before1.Position.Sub(before)
+	// before2.Position = before1.Position.Sub(before)
+	// after := planes[len(planes)-1].Position.Sub(planes[len(planes)-2].Position)
+	// after1 := *planes[len(planes)-1]
+	// after2 := *planes[len(planes)-1]
+	// after1.Position = after1.Position.Add(after)
+	// after2.Position = after1.Position.Add(after)
+	// planes = append([]*PeptidePlane{&before2, &before1}, planes...)
+	// planes = append(planes, &after1, &after2)
 	var previous fauxgl.Vector
 	for i, p := range planes {
 		if i > 0 && p.Side.Dot(previous) < 0 {
