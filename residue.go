@@ -10,22 +10,20 @@ const (
 )
 
 type Residue struct {
-	Type   ResidueType
-	Number int
-	Name   string
-	Chain  string
-	Atoms  map[string]*Atom
+	Type    ResidueType
+	ResSeq  int
+	ChainID string
+	Atoms   map[string]*Atom
 }
 
 func NewResidue(atoms []*Atom) *Residue {
-	number := atoms[0].ResSeq
-	name := atoms[0].ResName
-	chain := atoms[0].Chain
+	resSeq := atoms[0].ResSeq
+	chainID := atoms[0].ChainID
 	m := make(map[string]*Atom)
 	for _, a := range atoms {
 		m[a.Name] = a
 	}
-	return &Residue{ResidueTypeOther, number, name, chain, m}
+	return &Residue{ResidueTypeOther, resSeq, chainID, m}
 }
 
 func ResiduesForAtoms(atoms []*Atom) []*Residue {

@@ -38,7 +38,7 @@ func main() {
 
 	mesh.BiUnitCube()
 	// mesh.SmoothNormalsThreshold(Radians(75))
-	// mesh.SaveSTL("out.stl")
+	mesh.SaveSTL("out.stl")
 
 	// create a rendering context
 	context := NewContext(width*scale, height*scale)

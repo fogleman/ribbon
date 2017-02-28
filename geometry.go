@@ -98,7 +98,7 @@ func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 	const ribbonOffset = 0
 	const arrowHeadWidth = 2.5
 	const arrowWidth = 1.5
-	const arrowHeight = 1
+	const arrowHeight = 0.5
 	const tubeSize = 0.75
 	switch r1.Type {
 	case ResidueTypeHelix:
@@ -127,7 +127,7 @@ func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 		p2 = ellipseProfile(n, tubeSize, tubeSize)
 	}
 	if r1.Type == ResidueTypeStrand && r2.Type != ResidueTypeStrand {
-		p2 = ellipseProfile(n, 0, arrowHeight)
+		p2 = rectangleProfile(n, 0, arrowHeight)
 	}
 	return
 }
@@ -156,8 +156,8 @@ func segmentColors(r1, r2 *Residue) (c1, c2 fauxgl.Color) {
 }
 
 func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
-	const splineSteps = 32
-	const profileDetail = 32
+	const splineSteps = 16
+	const profileDetail = 16
 	r0 := pp1.Residue1
 	r1 := pp2.Residue1
 	r2 := pp3.Residue1

@@ -13,23 +13,37 @@ import (
 
 const (
 	scale  = 4
-	width  = 1800 * 2
-	height = 1200 * 2
+	width  = 1600
+	height = 1600
 	fovy   = 30
 	near   = 1
 	far    = 10
 )
 
+// var (
+// 	eye    = V(0, -4, 0)
+// 	center = V(0.15, 0, 0.15)
+// 	up     = V(-1, 0, -1).Normalize()
+// 	light  = V(0.25, -0.75, 0.25).Normalize()
+// )
+
 var (
-	eye    = V(0, -4, 0)
-	center = V(0.15, 0, 0.15)
-	up     = V(-1, 0, -1).Normalize()
-	light  = V(0.25, -0.75, 0.25).Normalize()
+	eye    = V(4, 0, 0)
+	center = V(0, 0, 0)
+	up     = V(0, 0, 1).Normalize()
+	light  = V(0.75, 0.25, 0.25).Normalize()
 )
 
-func main() {
-	// rand.Seed(time.Now().UTC().UnixNano())
+func makeCylinder(p0, p1 Vector, r float64) *Mesh {
+	p := p0.Add(p1).MulScalar(0.5)
+	h := p0.Distance(p1) * 2
+	up := p1.Sub(p0).Normalize()
+	mesh := NewCylinder(30, false)
+	mesh.Transform(Orient(p, V(r, r, h), up, 0))
+	return mesh
+}
 
+func main() {
 	model, err := ribbon.LoadPDB(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
@@ -49,7 +63,42 @@ func main() {
 		break
 	}
 	fmt.Println(len(mesh.Triangles))
-	mesh.Transform(Rotate(up, Radians(200)))
+
+	var previous Vector
+	for i, r := range model.Residues {
+		a := r.Atoms["CA"]
+		if a == nil {
+			continue
+		}
+		if a.ChainID != "A" {
+			continue
+		}
+		color := White
+		if r.Type == ribbon.ResidueTypeHelix {
+			color = Color{1, 0, 0, 1}
+		}
+		if r.Type == ribbon.ResidueTypeStrand {
+			color = Color{0, 1, 0, 1}
+		}
+		s := NewSphere(15, 15)
+		for _, t := range s.Triangles {
+			t.V1.Color = color
+			t.V2.Color = color
+			t.V3.Color = color
+		}
+		s.Transform(Scale(V(0.333, 0.333, 0.333)).Translate(a.Position))
+		mesh.Add(s)
+		if i != 0 {
+			c := makeCylinder(previous, a.Position, 0.2)
+			for _, t := range c.Triangles {
+				t.V1.Color = White
+				t.V2.Color = White
+				t.V3.Color = White
+			}
+			mesh.Add(c)
+		}
+		previous = a.Position
+	}
 
 	// base := mesh.Copy()
 	// for _, matrix := range model.SymmetryMatrixes {
@@ -89,12 +138,6 @@ func main() {
 	context.Cull = CullBack
 	context.DrawTriangles(mesh.Triangles)
 	fmt.Println(time.Since(start))
-
-	// context.Shader = NewSolidColorShader(matrix, Black)
-	// context.LineWidth = scale / 2
-	// context.DepthBias = -1e-4
-	// context.Wireframe = true
-	// context.DrawTriangles(mesh.Triangles)
 
 	// save image
 	image := context.Image()
