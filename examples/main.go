@@ -60,45 +60,45 @@ func main() {
 		// 	t.V3.Color = color
 		// }
 		mesh.Add(m)
-		break
+		// break
 	}
 	fmt.Println(len(mesh.Triangles))
 
-	var previous Vector
-	for i, r := range model.Residues {
-		a := r.Atoms["CA"]
-		if a == nil {
-			continue
-		}
-		if a.ChainID != "A" {
-			continue
-		}
-		color := White
-		if r.Type == ribbon.ResidueTypeHelix {
-			color = Color{1, 0, 0, 1}
-		}
-		if r.Type == ribbon.ResidueTypeStrand {
-			color = Color{0, 1, 0, 1}
-		}
-		s := NewSphere(15, 15)
-		for _, t := range s.Triangles {
-			t.V1.Color = color
-			t.V2.Color = color
-			t.V3.Color = color
-		}
-		s.Transform(Scale(V(0.333, 0.333, 0.333)).Translate(a.Position))
-		mesh.Add(s)
-		if i != 0 {
-			c := makeCylinder(previous, a.Position, 0.2)
-			for _, t := range c.Triangles {
-				t.V1.Color = White
-				t.V2.Color = White
-				t.V3.Color = White
-			}
-			mesh.Add(c)
-		}
-		previous = a.Position
-	}
+	// var previous Vector
+	// for i, r := range model.Residues {
+	// 	a := r.Atoms["CA"]
+	// 	if a == nil {
+	// 		continue
+	// 	}
+	// 	if a.ChainID != "A" {
+	// 		continue
+	// 	}
+	// 	color := White
+	// 	if r.Type == ribbon.ResidueTypeHelix {
+	// 		color = Color{1, 0, 0, 1}
+	// 	}
+	// 	if r.Type == ribbon.ResidueTypeStrand {
+	// 		color = Color{0, 1, 0, 1}
+	// 	}
+	// 	s := NewSphere(15, 15)
+	// 	for _, t := range s.Triangles {
+	// 		t.V1.Color = color
+	// 		t.V2.Color = color
+	// 		t.V3.Color = color
+	// 	}
+	// 	s.Transform(Scale(V(0.333, 0.333, 0.333)).Translate(a.Position))
+	// 	mesh.Add(s)
+	// 	if i != 0 {
+	// 		c := makeCylinder(previous, a.Position, 0.2)
+	// 		for _, t := range c.Triangles {
+	// 			t.V1.Color = White
+	// 			t.V2.Color = White
+	// 			t.V3.Color = White
+	// 		}
+	// 		mesh.Add(c)
+	// 	}
+	// 	previous = a.Position
+	// }
 
 	// base := mesh.Copy()
 	// for _, matrix := range model.SymmetryMatrixes {

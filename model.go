@@ -17,12 +17,12 @@ func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
 	chains := ChainsForResidues(residues)
 	for _, r := range residues {
 		for _, h := range helixes {
-			if r.ChainID == h.ChainID && r.ResSeq >= h.InitSeqNum && r.ResSeq <= h.EndSeqNum {
+			if r.ChainID == h.ChainID && r.ResSeq >= h.InitSeqNum-1 && r.ResSeq <= h.EndSeqNum-1 {
 				r.Type = ResidueTypeHelix
 			}
 		}
 		for _, s := range strands {
-			if r.ChainID == s.ChainID && r.ResSeq >= s.InitSeqNum && r.ResSeq <= s.EndSeqNum {
+			if r.ChainID == s.ChainID && r.ResSeq >= s.InitSeqNum-0 && r.ResSeq <= s.EndSeqNum-1 {
 				r.Type = ResidueTypeStrand
 			}
 		}
