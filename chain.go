@@ -52,3 +52,15 @@ func (c *Chain) Mesh() *fauxgl.Mesh {
 	}
 	return mesh
 }
+
+func (c *Chain) Poses(n int) (p, u []fauxgl.Vector) {
+	for i := 0; i < len(c.PeptidePlanes)-3; i++ {
+		pp1 := c.PeptidePlanes[i]
+		pp2 := c.PeptidePlanes[i+1]
+		pp3 := c.PeptidePlanes[i+2]
+		pp4 := c.PeptidePlanes[i+3]
+		p = append(p, splineForPlanes(pp1, pp2, pp3, pp4, n, 0, 0)[:n]...)
+		u = append(u, splineForPlanes(pp1, pp2, pp3, pp4, n, 0, 0.1)[:n]...)
+	}
+	return
+}
