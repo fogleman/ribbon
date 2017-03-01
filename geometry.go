@@ -92,7 +92,9 @@ func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 	return result
 }
 
-func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
+func geometryProfile(pp *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
+	type0 := pp.Residue1.Type
+	type1, type2 := pp.Transition()
 	const ribbonWidth = 2
 	const ribbonHeight = 0.125
 	const ribbonOffset = 0
@@ -100,24 +102,28 @@ func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 	const arrowWidth = 1.5
 	const arrowHeight = 0.5
 	const tubeSize = 0.75
-	switch r1.Type {
+	switch type1 {
 	case ResidueTypeHelix:
-		p1 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
+		if type0 == ResidueTypeStrand {
+			p1 = roundedRectangleProfile(n, 0, 0)
+		} else {
+			p1 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
+		}
 		p1 = translateProfile(p1, 0, ribbonOffset)
 	case ResidueTypeStrand:
-		if r2.Type == ResidueTypeStrand {
+		if type2 == ResidueTypeStrand {
 			p1 = rectangleProfile(n, arrowWidth, arrowHeight)
 		} else {
 			p1 = rectangleProfile(n, arrowHeadWidth, arrowHeight)
 		}
 	default:
-		if r0.Type == ResidueTypeStrand {
+		if type0 == ResidueTypeStrand {
 			p1 = ellipseProfile(n, 0, 0)
 		} else {
 			p1 = ellipseProfile(n, tubeSize, tubeSize)
 		}
 	}
-	switch r2.Type {
+	switch type2 {
 	case ResidueTypeHelix:
 		p2 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
 		p2 = translateProfile(p2, 0, ribbonOffset)
@@ -126,14 +132,15 @@ func geometryProfile(r0, r1, r2 *Residue, n int) (p1, p2 []fauxgl.Vector) {
 	default:
 		p2 = ellipseProfile(n, tubeSize, tubeSize)
 	}
-	if r1.Type == ResidueTypeStrand && r2.Type != ResidueTypeStrand {
+	if type1 == ResidueTypeStrand && type2 != ResidueTypeStrand {
 		p2 = rectangleProfile(n, 0, arrowHeight)
 	}
 	return
 }
 
-func segmentColors(r1, r2 *Residue) (c1, c2 fauxgl.Color) {
-	switch r1.Type {
+func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
+	type1, type2 := pp.Transition()
+	switch type1 {
 	case ResidueTypeHelix:
 		c1 = fauxgl.HexColor("FFB733")
 	case ResidueTypeStrand:
@@ -141,7 +148,7 @@ func segmentColors(r1, r2 *Residue) (c1, c2 fauxgl.Color) {
 	default:
 		c1 = fauxgl.HexColor("047878")
 	}
-	switch r2.Type {
+	switch type2 {
 	case ResidueTypeHelix:
 		c2 = fauxgl.HexColor("FFB733")
 	case ResidueTypeStrand:
@@ -149,20 +156,19 @@ func segmentColors(r1, r2 *Residue) (c1, c2 fauxgl.Color) {
 	default:
 		c2 = fauxgl.HexColor("047878")
 	}
-	if r1.Type == ResidueTypeStrand {
+	if type1 == ResidueTypeStrand {
 		c2 = c1
 	}
 	return
 }
 
 func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
-	const splineSteps = 16
+	const splineSteps = 32
 	const profileDetail = 16
-	r0 := pp1.Residue1
-	r1 := pp2.Residue1
-	r2 := pp3.Residue1
-	c1, c2 := segmentColors(r1, r2)
-	profile1, profile2 := geometryProfile(r0, r1, r2, profileDetail)
+	type0 := pp2.Residue1.Type
+	type1, type2 := pp2.Transition()
+	c1, c2 := segmentColors(pp2)
+	profile1, profile2 := geometryProfile(pp2, profileDetail)
 	splines1 := make([][]fauxgl.Vector, len(profile1))
 	splines2 := make([][]fauxgl.Vector, len(profile2))
 	for i := range splines1 {
@@ -176,25 +182,18 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	for i := 0; i < splineSteps; i++ {
 		t0 := float64(i) / splineSteps
 		t1 := float64(i+1) / splineSteps
-		if r1.Type == ResidueTypeOther && r0.Type == ResidueTypeStrand {
-			t0 = ease.OutQuint(t0)
-			t1 = ease.OutQuint(t1)
-		} else if !(r1.Type == ResidueTypeStrand && r2.Type != ResidueTypeStrand) {
+		if !(type1 == ResidueTypeStrand && type2 != ResidueTypeStrand) {
 			t0 = ease.InOutQuad(t0)
 			t1 = ease.InOutQuad(t1)
 		}
-		if r2.Type == ResidueTypeStrand && r1.Type == ResidueTypeOther {
-			if t0 < 0.5 {
-				t0 = 0
-			} else {
-				t0 = 1
-			}
-			if t1 < 0.5 {
-				t1 = 0
-			} else {
-				t1 = 1
-			}
+		if type0 == ResidueTypeStrand && type1 != ResidueTypeStrand {
+			t0 = ease.OutCirc(t0)
+			t1 = ease.OutCirc(t1)
 		}
+		// if type1 != ResidueTypeStrand && type2 == ResidueTypeStrand {
+		// 	t0 = ease.InOutSquare(t0)
+		// 	t1 = ease.InOutSquare(t1)
+		// }
 		for j := 0; j < profileDetail; j++ {
 			p100 := splines1[j][i]
 			p101 := splines1[j][i+1]
