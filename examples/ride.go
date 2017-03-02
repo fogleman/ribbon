@@ -13,8 +13,8 @@ import (
 
 const (
 	scale  = 1
-	width  = 1920 / 2
-	height = 1080 / 2
+	width  = 1920
+	height = 1080
 	fovy   = 60
 	near   = 0.1
 	far    = 100
@@ -49,20 +49,20 @@ func main() {
 
 	context := NewContext(width*scale, height*scale)
 
-	for i := 0; i < len(ps)-32; i++ {
-		path := fmt.Sprintf("frame%06d.png", i)
+	for i := 0; i < len(ps)-16; i++ {
+		path := fmt.Sprintf("frames/frame%06d.png", i)
 		if exists(path) {
 			continue
 		}
 		fmt.Println(i, len(ps))
 
 		eye1 := ps[i]
-		eye2 := ps[i+32]
+		eye2 := ps[i+16]
 		up1 := us[i].Sub(eye1).Normalize()
-		up2 := us[i+32].Sub(eye2).Normalize()
+		up2 := us[i+16].Sub(eye2).Normalize()
 
-		eye1 = eye1.Add(up1.MulScalar(1))
-		eye2 = eye2.Add(up2.MulScalar(1))
+		eye1 = eye1.Add(up1.MulScalar(0.3))
+		eye2 = eye2.Add(up2.MulScalar(0.3))
 
 		eye := eye1
 		center := eye2

@@ -194,6 +194,13 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 		// 	t0 = ease.InOutSquare(t0)
 		// 	t1 = ease.InOutSquare(t1)
 		// }
+		if i == 0 && type1 == ResidueTypeStrand && type2 != ResidueTypeStrand {
+			p00 := splines1[0][i]
+			p10 := splines1[profileDetail/4][i]
+			p11 := splines1[2*profileDetail/4][i]
+			p01 := splines1[3*profileDetail/4][i]
+			triangles = triangulateQuad(triangles, p00, p01, p11, p10, c1, c1, c1, c1)
+		}
 		for j := 0; j < profileDetail; j++ {
 			p100 := splines1[j][i]
 			p101 := splines1[j][i+1]
