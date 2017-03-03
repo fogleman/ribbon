@@ -13,9 +13,9 @@ import (
 
 const (
 	scale  = 4
-	width  = 1600
-	height = 1600
-	fovy   = 30
+	width  = 1920
+	height = 1080
+	fovy   = 25
 	near   = 1
 	far    = 10
 )
@@ -30,7 +30,7 @@ const (
 var (
 	eye    = V(4, 0, 0)
 	center = V(0, 0, 0)
-	up     = V(0, 0, 1).Normalize()
+	up     = V(0, 1, 1).Normalize()
 	light  = V(0.75, 0.25, 0.25).Normalize()
 )
 
@@ -66,13 +66,15 @@ func main() {
 
 	sphere := NewSphere(15, 15)
 	sphere.SmoothNormals()
+	atomsBySerial := make(map[int]*ribbon.Atom)
 	for _, a := range model.HetAtoms {
 		if a.ResName == "HOH" {
 			continue
 		}
+		atomsBySerial[a.Serial] = a
 		e := ribbon.ElementsBySymbol[a.Element]
 		c := HexColor(e.HexColor)
-		r := e.Radius
+		r := e.Radius * 0.75
 		s := V(r, r, r)
 		m := sphere.Copy()
 		m.Transform(Scale(s).Translate(a.Position))
@@ -80,6 +82,22 @@ func main() {
 			t.V1.Color = c
 			t.V2.Color = c
 			t.V3.Color = c
+		}
+		mesh.Add(m)
+	}
+	fmt.Println(len(mesh.Triangles))
+
+	for _, c := range model.Connections {
+		a := atomsBySerial[c.Serial1]
+		b := atomsBySerial[c.Serial2]
+		if a == nil || b == nil {
+			continue
+		}
+		m := makeCylinder(a.Position, b.Position, 0.25)
+		for _, t := range m.Triangles {
+			t.V1.Color = White
+			t.V2.Color = White
+			t.V3.Color = White
 		}
 		mesh.Add(m)
 	}
@@ -134,7 +152,7 @@ func main() {
 
 	mesh.BiUnitCube()
 	// mesh.SmoothNormalsThreshold(Radians(75))
-	mesh.SaveSTL("out.stl")
+	// mesh.SaveSTL("out.stl")
 
 	// create a rendering context
 	context := NewContext(width*scale, height*scale)

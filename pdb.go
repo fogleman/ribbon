@@ -15,6 +15,7 @@ func LoadPDB(path string) (*Model, error) {
 	}
 	var atoms []*Atom
 	var hetAtoms []*Atom
+	var connections []Connection
 	var helixes []*Helix
 	var strands []*Strand
 	var biologicalMatrixes []fauxgl.Matrix
@@ -63,11 +64,11 @@ func LoadPDB(path string) (*Model, error) {
 			y := parseFloat(strings.TrimSpace(line[38:46]))
 			z := parseFloat(strings.TrimSpace(line[46:54]))
 			atom.Position = fauxgl.Vector{x, y, z}
+			atom.Serial = parseInt(strings.TrimSpace(line[6:11]))
 			atom.Name = strings.TrimSpace(line[12:16])
 			atom.ResName = strings.TrimSpace(line[17:20])
 			atom.ChainID = line[21:22]
 			atom.ResSeq = parseInt(strings.TrimSpace(line[22:26]))
-			// atom.Serial = parseInt(strings.TrimSpace(line[6:11]))
 			// atom.Occupancy = parseFloat(strings.TrimSpace(line[54:60]))
 			// atom.TempFactor = parseFloat(strings.TrimSpace(line[60:66]))
 			// atom.Element = strings.TrimSpace(line[76:78])
@@ -80,6 +81,7 @@ func LoadPDB(path string) (*Model, error) {
 			y := parseFloat(strings.TrimSpace(line[38:46]))
 			z := parseFloat(strings.TrimSpace(line[46:54]))
 			atom.Position = fauxgl.Vector{x, y, z}
+			atom.Serial = parseInt(strings.TrimSpace(line[6:11]))
 			atom.Name = strings.TrimSpace(line[12:16])
 			atom.ResName = strings.TrimSpace(line[17:20])
 			atom.ChainID = line[21:22]
@@ -87,6 +89,19 @@ func LoadPDB(path string) (*Model, error) {
 			atom.Element = strings.TrimSpace(line[76:78])
 			atom.Het = true
 			hetAtoms = append(hetAtoms, &atom)
+		}
+		if strings.HasPrefix(line, "CONECT") {
+			a := parseInt(strings.TrimSpace(line[6:11]))
+			b1 := parseInt(strings.TrimSpace(line[11:16]))
+			b2 := parseInt(strings.TrimSpace(line[16:21]))
+			b3 := parseInt(strings.TrimSpace(line[21:26]))
+			b4 := parseInt(strings.TrimSpace(line[26:31]))
+			for _, b := range []int{b1, b2, b3, b4} {
+				if b != 0 {
+					c := Connection{a, b}
+					connections = append(connections, c)
+				}
+			}
 		}
 		if strings.HasPrefix(line, "HELIX ") {
 			helix := Helix{}
@@ -106,7 +121,7 @@ func LoadPDB(path string) (*Model, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	model := NewModel(atoms, hetAtoms, helixes, strands)
+	model := NewModel(atoms, hetAtoms, connections, helixes, strands)
 	model.BiologicalMatrixes = biologicalMatrixes
 	model.SymmetryMatrixes = symmetryMatrixes
 	return model, nil
