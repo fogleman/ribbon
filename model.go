@@ -4,6 +4,7 @@ import "github.com/fogleman/fauxgl"
 
 type Model struct {
 	Atoms              []*Atom
+	HetAtoms           []*Atom
 	Helixes            []*Helix
 	Strands            []*Strand
 	Residues           []*Residue
@@ -12,7 +13,7 @@ type Model struct {
 	SymmetryMatrixes   []fauxgl.Matrix
 }
 
-func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
+func NewModel(atoms, hetAtoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
 	residues := ResiduesForAtoms(atoms)
 	chains := ChainsForResidues(residues)
 	for _, r := range residues {
@@ -27,5 +28,5 @@ func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
 			}
 		}
 	}
-	return &Model{atoms, helixes, strands, residues, chains, nil, nil}
+	return &Model{atoms, hetAtoms, helixes, strands, residues, chains, nil, nil}
 }

@@ -64,6 +64,27 @@ func main() {
 	}
 	fmt.Println(len(mesh.Triangles))
 
+	sphere := NewSphere(15, 15)
+	sphere.SmoothNormals()
+	for _, a := range model.HetAtoms {
+		if a.ResName == "HOH" {
+			continue
+		}
+		e := ribbon.ElementsBySymbol[a.Element]
+		c := HexColor(e.HexColor)
+		r := e.Radius
+		s := V(r, r, r)
+		m := sphere.Copy()
+		m.Transform(Scale(s).Translate(a.Position))
+		for _, t := range m.Triangles {
+			t.V1.Color = c
+			t.V2.Color = c
+			t.V3.Color = c
+		}
+		mesh.Add(m)
+	}
+	fmt.Println(len(mesh.Triangles))
+
 	// var previous Vector
 	// for i, r := range model.Residues {
 	// 	a := r.Atoms["CA"]

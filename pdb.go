@@ -14,6 +14,7 @@ func LoadPDB(path string) (*Model, error) {
 		return nil, err
 	}
 	var atoms []*Atom
+	var hetAtoms []*Atom
 	var helixes []*Helix
 	var strands []*Strand
 	var biologicalMatrixes []fauxgl.Matrix
@@ -63,15 +64,29 @@ func LoadPDB(path string) (*Model, error) {
 			z := parseFloat(strings.TrimSpace(line[46:54]))
 			atom.Position = fauxgl.Vector{x, y, z}
 			atom.Name = strings.TrimSpace(line[12:16])
+			atom.ResName = strings.TrimSpace(line[17:20])
 			atom.ChainID = line[21:22]
 			atom.ResSeq = parseInt(strings.TrimSpace(line[22:26]))
 			// atom.Serial = parseInt(strings.TrimSpace(line[6:11]))
-			// atom.ResName = strings.TrimSpace(line[17:20])
 			// atom.Occupancy = parseFloat(strings.TrimSpace(line[54:60]))
 			// atom.TempFactor = parseFloat(strings.TrimSpace(line[60:66]))
 			// atom.Element = strings.TrimSpace(line[76:78])
 			// atom.Extra = strings.TrimSpace(line[66:76])
 			atoms = append(atoms, &atom)
+		}
+		if strings.HasPrefix(line, "HETATM") {
+			atom := Atom{}
+			x := parseFloat(strings.TrimSpace(line[30:38]))
+			y := parseFloat(strings.TrimSpace(line[38:46]))
+			z := parseFloat(strings.TrimSpace(line[46:54]))
+			atom.Position = fauxgl.Vector{x, y, z}
+			atom.Name = strings.TrimSpace(line[12:16])
+			atom.ResName = strings.TrimSpace(line[17:20])
+			atom.ChainID = line[21:22]
+			atom.ResSeq = parseInt(strings.TrimSpace(line[22:26]))
+			atom.Element = strings.TrimSpace(line[76:78])
+			atom.Het = true
+			hetAtoms = append(hetAtoms, &atom)
 		}
 		if strings.HasPrefix(line, "HELIX ") {
 			helix := Helix{}
@@ -91,7 +106,7 @@ func LoadPDB(path string) (*Model, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	model := NewModel(atoms, helixes, strands)
+	model := NewModel(atoms, hetAtoms, helixes, strands)
 	model.BiologicalMatrixes = biologicalMatrixes
 	model.SymmetryMatrixes = symmetryMatrixes
 	return model, nil
