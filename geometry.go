@@ -164,7 +164,7 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 
 func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	const splineSteps = 32
-	const profileDetail = 16
+	const profileDetail = 32
 	type0 := pp2.Residue1.Type
 	type1, type2 := pp2.Transition()
 	c1, c2 := segmentColors(pp2)

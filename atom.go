@@ -1,6 +1,10 @@
 package ribbon
 
-import "github.com/fogleman/fauxgl"
+import (
+	"strings"
+
+	"github.com/fogleman/fauxgl"
+)
 
 type Atom struct {
 	Position fauxgl.Vector
@@ -11,4 +15,8 @@ type Atom struct {
 	ResSeq   int
 	Element  string
 	Het      bool
+}
+
+func (a *Atom) GetElement() Element {
+	return ElementsBySymbol[strings.Title(strings.ToLower(a.Element))]
 }
