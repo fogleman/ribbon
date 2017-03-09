@@ -14,7 +14,6 @@ type Atom struct {
 	ChainID  string
 	ResSeq   int
 	Element  string
-	Het      bool
 }
 
 func (a *Atom) GetElement() Element {

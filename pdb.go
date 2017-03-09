@@ -87,7 +87,6 @@ func LoadPDB(path string) (*Model, error) {
 			atom.ChainID = line[21:22]
 			atom.ResSeq = parseInt(strings.TrimSpace(line[22:26]))
 			atom.Element = strings.TrimSpace(line[76:78])
-			atom.Het = true
 			hetAtoms = append(hetAtoms, &atom)
 		}
 		if strings.HasPrefix(line, "CONECT") {
