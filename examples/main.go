@@ -23,7 +23,7 @@ const (
 var (
 	eye    = V(5, 0, 0)
 	center = V(0, 0, 0)
-	up     = V(0, 1, 0).Normalize()
+	up     = V(0, 0, 1).Normalize()
 	light  = eye.Sub(center).Normalize()
 )
 
@@ -86,13 +86,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// fmt.Println(len(model.Atoms), len(model.Residues), len(model.Chains))
 
 	mesh := model.Mesh()
 	mesh.BiUnitCube()
 	// dumpMesh(mesh)
 	// return
 
+	fmt.Println(len(model.Atoms), len(model.Residues), len(model.Chains))
+	fmt.Println(len(mesh.Triangles))
 	// mesh.SaveSTL("out.stl")
 
 	// render

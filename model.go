@@ -19,12 +19,12 @@ func NewModel(atoms, hetAtoms []*Atom, connections []Connection, helixes []*Heli
 	chains := ChainsForResidues(residues)
 	for _, r := range residues {
 		for _, h := range helixes {
-			if r.ChainID == h.ChainID && r.ResSeq >= h.InitSeqNum && r.ResSeq <= h.EndSeqNum {
+			if h.Contains(r) {
 				r.Type = ResidueTypeHelix
 			}
 		}
 		for _, s := range strands {
-			if r.ChainID == s.ChainID && r.ResSeq >= s.InitSeqNum && r.ResSeq <= s.EndSeqNum {
+			if s.Contains(r) {
 				r.Type = ResidueTypeStrand
 			}
 		}
