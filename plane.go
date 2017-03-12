@@ -10,6 +10,7 @@ type PeptidePlane struct {
 	Normal   fauxgl.Vector
 	Forward  fauxgl.Vector
 	Side     fauxgl.Vector
+	Flipped  bool
 }
 
 func NewPeptidePlane(r1, r2, r3 *Residue) *PeptidePlane {
@@ -27,7 +28,7 @@ func NewPeptidePlane(r1, r2, r3 *Residue) *PeptidePlane {
 	c := a.Cross(b).Normalize()
 	d := c.Cross(a).Normalize()
 	p := ca1.Position.Add(ca2.Position).DivScalar(2)
-	return &PeptidePlane{r1, r2, r3, p, c, a, d}
+	return &PeptidePlane{r1, r2, r3, p, c, a, d, false}
 }
 
 func (pp *PeptidePlane) Transition() (type1, type2 ResidueType) {
@@ -43,4 +44,10 @@ func (pp *PeptidePlane) Transition() (type1, type2 ResidueType) {
 		type2 = t3
 	}
 	return
+}
+
+func (pp *PeptidePlane) Flip() {
+	pp.Side = pp.Side.Negate()
+	pp.Normal = pp.Normal.Negate()
+	pp.Flipped = !pp.Flipped
 }

@@ -10,8 +10,7 @@ func NewChain(planes []*PeptidePlane) *Chain {
 	var previous fauxgl.Vector
 	for i, p := range planes {
 		if i > 0 && p.Side.Dot(previous) < 0 {
-			p.Side = p.Side.Negate()
-			p.Normal = p.Normal.Negate()
+			p.Flip()
 		}
 		previous = p.Side
 	}

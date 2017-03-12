@@ -16,7 +16,6 @@ type Model struct {
 
 func NewModel(atoms, hetAtoms []*Atom, connections []Connection, helixes []*Helix, strands []*Strand) *Model {
 	residues := ResiduesForAtoms(atoms)
-	chains := ChainsForResidues(residues)
 	for _, r := range residues {
 		for _, h := range helixes {
 			if h.Contains(r) {
@@ -29,6 +28,7 @@ func NewModel(atoms, hetAtoms []*Atom, connections []Connection, helixes []*Heli
 			}
 		}
 	}
+	chains := ChainsForResidues(residues)
 	return &Model{atoms, hetAtoms, connections, helixes, strands, residues, chains, nil, nil}
 }
 
@@ -77,6 +77,9 @@ func (model *Model) SpaceFillingMesh() *fauxgl.Mesh {
 	sphere.SmoothNormals()
 	for _, a := range model.Atoms {
 		e := a.GetElement()
+		if a.Name != "CA" {
+			continue
+		}
 		r := e.VanDerWaalsRadius
 		r = e.Radius * 0.5
 		s := fauxgl.V(r, r, r)
@@ -85,15 +88,15 @@ func (model *Model) SpaceFillingMesh() *fauxgl.Mesh {
 		m.SetColor(fauxgl.HexColor(e.HexColor))
 		mesh.Add(m)
 	}
-	for _, r := range model.Residues {
-		mesh.Add(makeConnection(r.Atoms["CA"], r.Atoms["N"]))
-		mesh.Add(makeConnection(r.Atoms["C"], r.Atoms["O"]))
-		mesh.Add(makeConnection(r.Atoms["C"], r.Atoms["CA"]))
-		mesh.Add(makeConnection(r.Atoms["CA"], r.Atoms["CB"]))
-		mesh.Add(makeConnection(r.Atoms["CB"], r.Atoms["CG"]))
-		mesh.Add(makeConnection(r.Atoms["CG"], r.Atoms["CD"]))
-		mesh.Add(makeConnection(r.Atoms["CD"], r.Atoms["CE"]))
-	}
+	// for _, r := range model.Residues {
+	// 	mesh.Add(makeConnection(r.Atoms["CA"], r.Atoms["N"]))
+	// 	mesh.Add(makeConnection(r.Atoms["C"], r.Atoms["O"]))
+	// 	mesh.Add(makeConnection(r.Atoms["C"], r.Atoms["CA"]))
+	// 	mesh.Add(makeConnection(r.Atoms["CA"], r.Atoms["CB"]))
+	// 	mesh.Add(makeConnection(r.Atoms["CB"], r.Atoms["CG"]))
+	// 	mesh.Add(makeConnection(r.Atoms["CG"], r.Atoms["CD"]))
+	// 	mesh.Add(makeConnection(r.Atoms["CD"], r.Atoms["CE"]))
+	// }
 	return mesh
 }
 
@@ -101,7 +104,7 @@ func (model *Model) Mesh() *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	mesh.Add(model.RibbonMesh())
 	mesh.Add(model.HetMesh())
-	// mesh.Add(model.SpaceFillingMesh())
+	mesh.Add(model.SpaceFillingMesh())
 
 	// base := mesh.Copy()
 	// for _, matrix := range model.SymmetryMatrixes {
