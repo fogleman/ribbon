@@ -143,6 +143,7 @@ func makeCylinder(p0, p1 fauxgl.Vector, r float64) *fauxgl.Mesh {
 	h := p0.Distance(p1) * 2
 	up := p1.Sub(p0).Normalize()
 	mesh := fauxgl.NewCylinder(15, false)
+	mesh.SmoothNormals()
 	mesh.Transform(fauxgl.Orient(p, fauxgl.V(r, r, h), up, 0))
 	return mesh
 }

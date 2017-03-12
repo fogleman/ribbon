@@ -13,9 +13,9 @@ import (
 
 const (
 	scale  = 4
-	width  = 2400 * 1
-	height = 1600 * 1
-	fovy   = 25
+	width  = 1600 * 1
+	height = 1200 * 1
+	fovy   = 20
 	near   = 1
 	far    = 10
 )
@@ -23,7 +23,7 @@ const (
 var (
 	eye    = V(5, 0, 0)
 	center = V(0, 0, 0)
-	up     = V(0, 0, 1).Normalize()
+	up     = V(0, 1, 0).Normalize()
 	light  = eye.Sub(center).Normalize()
 )
 
@@ -86,6 +86,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// min := model.Atoms[0].TempFactor
+	// max := model.Atoms[0].TempFactor
+	// for _, a := range model.Atoms {
+	// 	if a.Name != "CA" {
+	// 		continue
+	// 	}
+	// 	min = math.Min(min, a.TempFactor)
+	// 	max = math.Max(max, a.TempFactor)
+	// }
+	// fmt.Println(min, max)
 
 	mesh := model.Mesh()
 	mesh.BiUnitCube()
