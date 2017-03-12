@@ -93,7 +93,7 @@ func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 }
 
 func geometryProfile(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
-	type0 := pp1.Residue1.Type
+	type0 := pp1.Residue1.Secondary
 	type1, type2 := pp1.Transition()
 	const ribbonWidth = 2
 	const ribbonHeight = 0.125
@@ -111,36 +111,36 @@ func geometryProfile(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 		offset2 = -offset2
 	}
 	switch type1 {
-	case ResidueTypeHelix:
-		if type0 == ResidueTypeStrand {
+	case SecondaryHelix:
+		if type0 == SecondaryStrand {
 			p1 = roundedRectangleProfile(n, 0, 0)
 		} else {
 			p1 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
 		}
 		p1 = translateProfile(p1, 0, offset1)
-	case ResidueTypeStrand:
-		if type2 == ResidueTypeStrand {
+	case SecondaryStrand:
+		if type2 == SecondaryStrand {
 			p1 = rectangleProfile(n, arrowWidth, arrowHeight)
 		} else {
 			p1 = rectangleProfile(n, arrowHeadWidth, arrowHeight)
 		}
 	default:
-		if type0 == ResidueTypeStrand {
+		if type0 == SecondaryStrand {
 			p1 = ellipseProfile(n, 0, 0)
 		} else {
 			p1 = ellipseProfile(n, tubeSize, tubeSize)
 		}
 	}
 	switch type2 {
-	case ResidueTypeHelix:
+	case SecondaryHelix:
 		p2 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
 		p2 = translateProfile(p2, 0, offset2)
-	case ResidueTypeStrand:
+	case SecondaryStrand:
 		p2 = rectangleProfile(n, arrowWidth, arrowHeight)
 	default:
 		p2 = ellipseProfile(n, tubeSize, tubeSize)
 	}
-	if type1 == ResidueTypeStrand && type2 != ResidueTypeStrand {
+	if type1 == SecondaryStrand && type2 != SecondaryStrand {
 		p2 = rectangleProfile(n, 0, arrowHeight)
 	}
 	return
@@ -158,22 +158,22 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 	// return
 	type1, type2 := pp.Transition()
 	switch type1 {
-	case ResidueTypeHelix:
+	case SecondaryHelix:
 		c1 = fauxgl.HexColor("FFB733")
-	case ResidueTypeStrand:
+	case SecondaryStrand:
 		c1 = fauxgl.HexColor("F57336")
 	default:
 		c1 = fauxgl.HexColor("047878")
 	}
 	switch type2 {
-	case ResidueTypeHelix:
+	case SecondaryHelix:
 		c2 = fauxgl.HexColor("FFB733")
-	case ResidueTypeStrand:
+	case SecondaryStrand:
 		c2 = fauxgl.HexColor("F57336")
 	default:
 		c2 = fauxgl.HexColor("047878")
 	}
-	if type1 == ResidueTypeStrand {
+	if type1 == SecondaryStrand {
 		c2 = c1
 	}
 	return
@@ -182,7 +182,7 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	const splineSteps = 32
 	const profileDetail = 32
-	type0 := pp2.Residue1.Type
+	type0 := pp2.Residue1.Secondary
 	type1, type2 := pp2.Transition()
 	c1, c2 := segmentColors(pp2)
 	profile1, profile2 := geometryProfile(pp2, pp3, profileDetail)
@@ -199,19 +199,19 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	for i := 0; i < splineSteps; i++ {
 		t0 := float64(i) / splineSteps
 		t1 := float64(i+1) / splineSteps
-		if !(type1 == ResidueTypeStrand && type2 != ResidueTypeStrand) {
+		if !(type1 == SecondaryStrand && type2 != SecondaryStrand) {
 			t0 = ease.InOutQuad(t0)
 			t1 = ease.InOutQuad(t1)
 		}
-		if type0 == ResidueTypeStrand && type1 != ResidueTypeStrand {
+		if type0 == SecondaryStrand && type1 != SecondaryStrand {
 			t0 = ease.OutCirc(t0)
 			t1 = ease.OutCirc(t1)
 		}
-		// if type1 != ResidueTypeStrand && type2 == ResidueTypeStrand {
+		// if type1 != SecondaryStrand && type2 == SecondaryStrand {
 		// 	t0 = ease.InOutSquare(t0)
 		// 	t1 = ease.InOutSquare(t1)
 		// }
-		if i == 0 && type1 == ResidueTypeStrand && type2 != ResidueTypeStrand {
+		if i == 0 && type1 == SecondaryStrand && type2 != SecondaryStrand {
 			p00 := splines1[0][i]
 			p10 := splines1[profileDetail/4][i]
 			p11 := splines1[2*profileDetail/4][i]

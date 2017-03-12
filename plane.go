@@ -31,10 +31,10 @@ func NewPeptidePlane(r1, r2, r3 *Residue) *PeptidePlane {
 	return &PeptidePlane{r1, r2, r3, p, c, a, d, false}
 }
 
-func (pp *PeptidePlane) Transition() (type1, type2 ResidueType) {
-	t1 := pp.Residue1.Type
-	t2 := pp.Residue2.Type
-	t3 := pp.Residue3.Type
+func (pp *PeptidePlane) Transition() (type1, type2 Secondary) {
+	t1 := pp.Residue1.Secondary
+	t2 := pp.Residue2.Secondary
+	t3 := pp.Residue3.Secondary
 	type1 = t2
 	type2 = t2
 	if t2 > t1 && t2 == t3 {

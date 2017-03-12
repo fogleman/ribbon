@@ -19,12 +19,12 @@ func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
 	for _, r := range residues {
 		for _, h := range helixes {
 			if h.Contains(r) {
-				r.Type = ResidueTypeHelix
+				r.Secondary = SecondaryHelix
 			}
 		}
 		for _, s := range strands {
 			if s.Contains(r) {
-				r.Type = ResidueTypeStrand
+				r.Secondary = SecondaryStrand
 			}
 		}
 	}

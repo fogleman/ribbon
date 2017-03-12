@@ -13,17 +13,17 @@ import (
 
 const (
 	scale  = 4
-	width  = 1600 * 1
-	height = 1200 * 1
-	fovy   = 20
+	width  = 2048 * 1
+	height = 2048 * 1
 	near   = 1
-	far    = 10
+	far    = 100
 )
 
 var (
 	eye    = V(5, 0, 0)
 	center = V(0, 0, 0)
 	up     = V(0, 1, 0).Normalize()
+	fovy   = 20.0
 	light  = eye.Sub(center).Normalize()
 )
 
@@ -99,9 +99,16 @@ func main() {
 	// fmt.Println(min, max)
 
 	mesh := model.Mesh()
-	mesh.BiUnitCube()
+	m := mesh.BiUnitCube()
 	// dumpMesh(mesh)
 	// return
+
+	camera := model.Camera(m)
+	eye = camera.Eye
+	center = camera.Center
+	up = camera.Up
+	fovy = camera.Fovy
+	light = eye.Sub(center).Normalize()
 
 	fmt.Println(len(model.Atoms), len(model.Residues), len(model.Chains))
 	fmt.Println(len(mesh.Triangles))
@@ -123,7 +130,7 @@ func main() {
 	// save image
 	image := context.Image()
 	image = resize.Resize(width, height, image, resize.Bilinear)
-	SavePNG("out.png", image)
+	SavePNG(os.Args[2], image)
 
 	// for i := 0; i < 720; i += 1 {
 	// 	context.ClearColorBufferWith(HexColor("1D181F"))
