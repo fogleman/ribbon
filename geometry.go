@@ -98,8 +98,8 @@ func geometryProfile(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	const ribbonWidth = 2
 	const ribbonHeight = 0.125
 	const ribbonOffset = 1.5
-	const arrowHeadWidth = 2.5
-	const arrowWidth = 1.5
+	const arrowHeadWidth = 3
+	const arrowWidth = 2
 	const arrowHeight = 0.5
 	const tubeSize = 0.75
 	offset1 := ribbonOffset
@@ -147,6 +147,15 @@ func geometryProfile(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 }
 
 func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
+	// const minTemp = 10
+	// const maxTemp = 50
+	// f1 := pp.Residue2.Atoms["CA"].TempFactor
+	// f2 := pp.Residue3.Atoms["CA"].TempFactor
+	// t1 := fauxgl.Clamp((f1-minTemp)/(maxTemp-minTemp), 0, 1)
+	// t2 := fauxgl.Clamp((f2-minTemp)/(maxTemp-minTemp), 0, 1)
+	// c1 = fauxgl.MakeColor(Viridis.Color(t1))
+	// c2 = fauxgl.MakeColor(Viridis.Color(t2))
+	// return
 	type1, type2 := pp.Transition()
 	switch type1 {
 	case ResidueTypeHelix:

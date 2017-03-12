@@ -70,9 +70,8 @@ func LoadPDB(path string) (*Model, error) {
 			atom.ChainID = line[21:22]
 			atom.ResSeq = parseInt(strings.TrimSpace(line[22:26]))
 			atom.Element = strings.TrimSpace(line[76:78])
-			// atom.Occupancy = parseFloat(strings.TrimSpace(line[54:60]))
-			// atom.TempFactor = parseFloat(strings.TrimSpace(line[60:66]))
-			// atom.Extra = strings.TrimSpace(line[66:76])
+			atom.Occupancy = parseFloat(strings.TrimSpace(line[54:60]))
+			atom.TempFactor = parseFloat(strings.TrimSpace(line[60:66]))
 			atoms = append(atoms, &atom)
 		}
 		if strings.HasPrefix(line, "HETATM") {
@@ -87,6 +86,8 @@ func LoadPDB(path string) (*Model, error) {
 			atom.ChainID = line[21:22]
 			atom.ResSeq = parseInt(strings.TrimSpace(line[22:26]))
 			atom.Element = strings.TrimSpace(line[76:78])
+			atom.Occupancy = parseFloat(strings.TrimSpace(line[54:60]))
+			atom.TempFactor = parseFloat(strings.TrimSpace(line[60:66]))
 			hetAtoms = append(hetAtoms, &atom)
 		}
 		if strings.HasPrefix(line, "CONECT") {

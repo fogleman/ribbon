@@ -81,7 +81,7 @@ func (model *Model) SpaceFillingMesh() *fauxgl.Mesh {
 			continue
 		}
 		r := e.VanDerWaalsRadius
-		r = e.Radius * 0.5
+		// r = e.Radius * 0.5
 		s := fauxgl.V(r, r, r)
 		m := sphere.Copy()
 		m.Transform(fauxgl.Scale(s).Translate(a.Position))
@@ -104,7 +104,7 @@ func (model *Model) Mesh() *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	mesh.Add(model.RibbonMesh())
 	mesh.Add(model.HetMesh())
-	mesh.Add(model.SpaceFillingMesh())
+	// mesh.Add(model.SpaceFillingMesh())
 
 	// base := mesh.Copy()
 	// for _, matrix := range model.SymmetryMatrixes {
