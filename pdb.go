@@ -18,8 +18,8 @@ func LoadPDB(path string) (*Model, error) {
 	var connections []Connection
 	var helixes []*Helix
 	var strands []*Strand
-	var biologicalMatrixes []fauxgl.Matrix
-	var symmetryMatrixes []fauxgl.Matrix
+	var bioMatrixes []fauxgl.Matrix
+	var symMatrixes []fauxgl.Matrix
 	var m [4][4]float64
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -35,7 +35,7 @@ func LoadPDB(path string) (*Model, error) {
 			m[row][2] = parseFloat(strings.TrimSpace(line[43:53]))
 			m[row][3] = parseFloat(strings.TrimSpace(line[53:68]))
 			if row == 2 {
-				biologicalMatrixes = append(biologicalMatrixes, fauxgl.Matrix{
+				bioMatrixes = append(bioMatrixes, fauxgl.Matrix{
 					m[0][0], m[0][1], m[0][2], m[0][3],
 					m[1][0], m[1][1], m[1][2], m[1][3],
 					m[2][0], m[2][1], m[2][2], m[2][3],
@@ -50,7 +50,7 @@ func LoadPDB(path string) (*Model, error) {
 			m[row][2] = parseFloat(strings.TrimSpace(line[43:53]))
 			m[row][3] = parseFloat(strings.TrimSpace(line[53:68]))
 			if row == 2 {
-				symmetryMatrixes = append(symmetryMatrixes, fauxgl.Matrix{
+				symMatrixes = append(symMatrixes, fauxgl.Matrix{
 					m[0][0], m[0][1], m[0][2], m[0][3],
 					m[1][0], m[1][1], m[1][2], m[1][3],
 					m[2][0], m[2][1], m[2][2], m[2][3],
@@ -121,8 +121,10 @@ func LoadPDB(path string) (*Model, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	model := NewModel(atoms, hetAtoms, connections, helixes, strands)
-	model.BiologicalMatrixes = biologicalMatrixes
-	model.SymmetryMatrixes = symmetryMatrixes
+	model := NewModel(atoms, helixes, strands)
+	model.HetAtoms = hetAtoms
+	model.Connections = connections
+	model.BioMatrixes = bioMatrixes
+	model.SymMatrixes = symMatrixes
 	return model, nil
 }

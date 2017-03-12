@@ -3,18 +3,18 @@ package ribbon
 import "github.com/fogleman/fauxgl"
 
 type Model struct {
-	Atoms              []*Atom
-	HetAtoms           []*Atom
-	Connections        []Connection
-	Helixes            []*Helix
-	Strands            []*Strand
-	Residues           []*Residue
-	Chains             []*Chain
-	BiologicalMatrixes []fauxgl.Matrix
-	SymmetryMatrixes   []fauxgl.Matrix
+	Atoms       []*Atom
+	HetAtoms    []*Atom
+	Connections []Connection
+	Helixes     []*Helix
+	Strands     []*Strand
+	Residues    []*Residue
+	Chains      []*Chain
+	BioMatrixes []fauxgl.Matrix
+	SymMatrixes []fauxgl.Matrix
 }
 
-func NewModel(atoms, hetAtoms []*Atom, connections []Connection, helixes []*Helix, strands []*Strand) *Model {
+func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
 	residues := ResiduesForAtoms(atoms)
 	for _, r := range residues {
 		for _, h := range helixes {
@@ -29,7 +29,7 @@ func NewModel(atoms, hetAtoms []*Atom, connections []Connection, helixes []*Heli
 		}
 	}
 	chains := ChainsForResidues(residues)
-	return &Model{atoms, hetAtoms, connections, helixes, strands, residues, chains, nil, nil}
+	return &Model{atoms, nil, nil, helixes, strands, residues, chains, nil, nil}
 }
 
 func (model *Model) RibbonMesh() *fauxgl.Mesh {
@@ -47,8 +47,6 @@ func (model *Model) RibbonMesh() *fauxgl.Mesh {
 
 func (model *Model) HetMesh() *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
-	sphere := fauxgl.NewSphere(15, 15)
-	sphere.SmoothNormals()
 	atomsBySerial := make(map[int]*Atom)
 	for _, a := range model.HetAtoms {
 		if a.ResName == "HOH" {
@@ -58,7 +56,7 @@ func (model *Model) HetMesh() *fauxgl.Mesh {
 		e := a.GetElement()
 		r := e.Radius * 0.75
 		s := fauxgl.V(r, r, r)
-		m := sphere.Copy()
+		m := unitSphere.Copy()
 		m.Transform(fauxgl.Scale(s).Translate(a.Position))
 		m.SetColor(fauxgl.HexColor(e.HexColor))
 		mesh.Add(m)
@@ -73,8 +71,6 @@ func (model *Model) HetMesh() *fauxgl.Mesh {
 
 func (model *Model) SpaceFillingMesh() *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
-	sphere := fauxgl.NewSphere(15, 15)
-	sphere.SmoothNormals()
 	for _, a := range model.Atoms {
 		e := a.GetElement()
 		if a.Name != "CA" {
@@ -83,7 +79,7 @@ func (model *Model) SpaceFillingMesh() *fauxgl.Mesh {
 		r := e.VanDerWaalsRadius
 		// r = e.Radius * 0.5
 		s := fauxgl.V(r, r, r)
-		m := sphere.Copy()
+		m := unitSphere.Copy()
 		m.Transform(fauxgl.Scale(s).Translate(a.Position))
 		m.SetColor(fauxgl.HexColor(e.HexColor))
 		mesh.Add(m)
@@ -107,7 +103,7 @@ func (model *Model) Mesh() *fauxgl.Mesh {
 	// mesh.Add(model.SpaceFillingMesh())
 
 	// base := mesh.Copy()
-	// for _, matrix := range model.SymmetryMatrixes {
+	// for _, matrix := range model.SymMatrixes {
 	// 	if matrix == fauxgl.Identity() {
 	// 		continue
 	// 	}
@@ -142,8 +138,19 @@ func makeCylinder(p0, p1 fauxgl.Vector, r float64) *fauxgl.Mesh {
 	p := p0.Add(p1).MulScalar(0.5)
 	h := p0.Distance(p1) * 2
 	up := p1.Sub(p0).Normalize()
-	mesh := fauxgl.NewCylinder(15, false)
-	mesh.SmoothNormals()
+	mesh := unitCylinder.Copy()
 	mesh.Transform(fauxgl.Orient(p, fauxgl.V(r, r, h), up, 0))
 	return mesh
+}
+
+var (
+	unitSphere   *fauxgl.Mesh
+	unitCylinder *fauxgl.Mesh
+)
+
+func init() {
+	unitSphere = fauxgl.NewSphere(15, 15)
+	unitSphere.SmoothNormals()
+	unitCylinder = fauxgl.NewCylinder(15, false)
+	unitCylinder.SmoothNormals()
 }
