@@ -32,6 +32,17 @@ func NewModel(atoms []*Atom, helixes []*Helix, strands []*Strand) *Model {
 	return &Model{atoms, nil, nil, helixes, strands, residues, chains, nil, nil}
 }
 
+func (model *Model) Camera(matrix fauxgl.Matrix) Camera {
+	var points []fauxgl.Vector
+	for _, r := range model.Residues {
+		points = append(points, r.Atoms["CA"].Position)
+	}
+	for i, point := range points {
+		points[i] = matrix.MulPosition(point)
+	}
+	return makeCamera(points)
+}
+
 func (model *Model) RibbonMesh() *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	for _, c := range model.Chains {
