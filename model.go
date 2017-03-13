@@ -49,7 +49,7 @@ func (model *Model) RibbonMesh() *fauxgl.Mesh {
 		m := c.Mesh()
 		for i, t := range m.Triangles {
 			p := float64(i) / float64(len(m.Triangles)-1)
-			t.SetColor(fauxgl.MakeColor(Viridis.Color(p)))
+			t.SetColor(Viridis.Color(p))
 		}
 		mesh.Add(m)
 	}
@@ -163,5 +163,5 @@ func init() {
 	unitSphere = fauxgl.NewSphere(15, 15)
 	unitSphere.SmoothNormals()
 	unitCylinder = fauxgl.NewCylinder(15, false)
-	unitCylinder.SmoothNormals()
+	// unitCylinder.SmoothNormals()
 }

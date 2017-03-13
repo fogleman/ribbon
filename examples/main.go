@@ -27,6 +27,16 @@ var (
 	light  = eye.Sub(center).Normalize()
 )
 
+func timed(name string) func() {
+	if len(name) > 0 {
+		fmt.Printf("%s... ", name)
+	}
+	start := time.Now()
+	return func() {
+		fmt.Println(time.Since(start))
+	}
+}
+
 func dumpMesh(mesh *Mesh) {
 	var vertices []Vector
 	var colors []Color
@@ -82,10 +92,22 @@ func dumpMesh(mesh *Mesh) {
 }
 
 func main() {
+	var done func()
+
+	done = timed("loading pdb file")
 	model, err := ribbon.LoadPDB(os.Args[1])
+	done()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Printf("atoms       = %d\n", len(model.Atoms))
+	fmt.Printf("residues    = %d\n", len(model.Residues))
+	fmt.Printf("chains      = %d\n", len(model.Chains))
+	fmt.Printf("helixes     = %d\n", len(model.Helixes))
+	fmt.Printf("strands     = %d\n", len(model.Strands))
+	fmt.Printf("het-atoms   = %d\n", len(model.HetAtoms))
+	fmt.Printf("connections = %d\n", len(model.Connections))
 
 	// min := model.Atoms[0].TempFactor
 	// max := model.Atoms[0].TempFactor
@@ -98,23 +120,31 @@ func main() {
 	// }
 	// fmt.Println(min, max)
 
+	done = timed("generating triangle mesh")
 	mesh := model.Mesh()
+	done()
+
+	fmt.Printf("triangles   = %d\n", len(mesh.Triangles))
+
+	done = timed("transforming mesh")
 	m := mesh.BiUnitCube()
+	done()
 	// dumpMesh(mesh)
 	// return
 
+	done = timed("finding ideal camera position")
 	camera := model.Camera(m)
 	eye = camera.Eye
 	center = camera.Center
 	up = camera.Up
 	fovy = camera.Fovy
 	light = eye.Sub(center).Normalize()
+	done()
 
-	fmt.Println(len(model.Atoms), len(model.Residues), len(model.Chains))
-	fmt.Println(len(mesh.Triangles))
 	// mesh.SaveSTL("out.stl")
 
 	// render
+	done = timed("rendering image")
 	context := NewContext(width*scale, height*scale)
 	context.ClearColorBufferWith(HexColor("1D181F"))
 	aspect := float64(width) / float64(height)
@@ -123,14 +153,19 @@ func main() {
 	shader.AmbientColor = Gray(0.3)
 	shader.DiffuseColor = Gray(0.9)
 	context.Shader = shader
-	start := time.Now()
 	context.DrawTriangles(mesh.Triangles)
-	fmt.Println(time.Since(start))
+	done()
 
 	// save image
+	done = timed("downsampling image")
 	image := context.Image()
 	image = resize.Resize(width, height, image, resize.Bilinear)
-	SavePNG(os.Args[2], image)
+	done()
+
+	done = timed("writing image to disk")
+	// SavePNG(os.Args[2], image)
+	SavePNG("out.png", image)
+	done()
 
 	// for i := 0; i < 720; i += 1 {
 	// 	context.ClearColorBufferWith(HexColor("1D181F"))
