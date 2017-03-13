@@ -179,13 +179,30 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 	return
 }
 
-func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
+func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	const splineSteps = 32
 	const profileDetail = 32
 	s0 := pp2.Residue1.Secondary
 	s1, s2 := pp2.Transition()
 	c1, c2 := segmentColors(pp2)
 	profile1, profile2 := geometryProfile(pp2, pp3, profileDetail)
+	easeFunc := ease.Linear
+	if !(s1 == SecondaryStrand && s2 != SecondaryStrand) {
+		easeFunc = ease.InOutQuad
+	}
+	if s0 == SecondaryStrand && s1 != SecondaryStrand {
+		easeFunc = ease.OutCirc
+	}
+	// if s1 != SecondaryStrand && s2 == SecondaryStrand {
+	// 	easeFunc = ease.InOutSquare
+	// }
+	if i == 0 {
+		profile1 = ellipseProfile(profileDetail, 0, 0)
+		easeFunc = ease.OutCirc
+	} else if i == n-1 {
+		profile2 = ellipseProfile(profileDetail, 0, 0)
+		easeFunc = ease.InCirc
+	}
 	splines1 := make([][]fauxgl.Vector, len(profile1))
 	splines2 := make([][]fauxgl.Vector, len(profile2))
 	for i := range splines1 {
@@ -197,20 +214,8 @@ func createSegmentMesh(pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	var triangles []*fauxgl.Triangle
 	var lines []*fauxgl.Line
 	for i := 0; i < splineSteps; i++ {
-		t0 := float64(i) / splineSteps
-		t1 := float64(i+1) / splineSteps
-		if !(s1 == SecondaryStrand && s2 != SecondaryStrand) {
-			t0 = ease.InOutQuad(t0)
-			t1 = ease.InOutQuad(t1)
-		}
-		if s0 == SecondaryStrand && s1 != SecondaryStrand {
-			t0 = ease.OutCirc(t0)
-			t1 = ease.OutCirc(t1)
-		}
-		// if s1 != SecondaryStrand && s2 == SecondaryStrand {
-		// 	t0 = ease.InOutSquare(t0)
-		// 	t1 = ease.InOutSquare(t1)
-		// }
+		t0 := easeFunc(float64(i) / splineSteps)
+		t1 := easeFunc(float64(i+1) / splineSteps)
 		if i == 0 && s1 == SecondaryStrand && s2 != SecondaryStrand {
 			p00 := splines1[0][i]
 			p10 := splines1[profileDetail/4][i]
@@ -253,4 +258,19 @@ func triangulateQuad(triangles []*fauxgl.Triangle, p1, p2, p3, p4 fauxgl.Vector,
 	triangles = append(triangles, t1)
 	triangles = append(triangles, t2)
 	return triangles
+}
+
+func createChainMesh(chain *Chain) *fauxgl.Mesh {
+	mesh := fauxgl.NewEmptyMesh()
+	n := len(chain.PeptidePlanes) - 3
+	for i := 0; i < n; i++ {
+		// TODO: handle ends better
+		pp1 := chain.PeptidePlanes[i]
+		pp2 := chain.PeptidePlanes[i+1]
+		pp3 := chain.PeptidePlanes[i+2]
+		pp4 := chain.PeptidePlanes[i+3]
+		m := createSegmentMesh(i, n, pp1, pp2, pp3, pp4)
+		mesh.Add(m)
+	}
+	return mesh
 }

@@ -39,17 +39,7 @@ func ChainsForResidues(residues []*Residue) []*Chain {
 }
 
 func (c *Chain) Mesh() *fauxgl.Mesh {
-	mesh := fauxgl.NewEmptyMesh()
-	for i := 0; i < len(c.PeptidePlanes)-3; i++ {
-		// TODO: handle ends better
-		pp1 := c.PeptidePlanes[i]
-		pp2 := c.PeptidePlanes[i+1]
-		pp3 := c.PeptidePlanes[i+2]
-		pp4 := c.PeptidePlanes[i+3]
-		m := createSegmentMesh(pp1, pp2, pp3, pp4)
-		mesh.Add(m)
-	}
-	return mesh
+	return createChainMesh(c)
 }
 
 func (c *Chain) Poses(n int) (p, u []fauxgl.Vector) {
