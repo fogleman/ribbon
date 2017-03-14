@@ -8,4 +8,6 @@ type Model struct {
 	Strands     []*Strand
 	BioMatrixes []Matrix
 	SymMatrixes []Matrix
+	Residues    []*Residue
+	Chains      []*Chain
 }

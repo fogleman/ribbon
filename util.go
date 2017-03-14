@@ -1,13 +1,16 @@
 package ribbon
 
-import "strconv"
+import (
+	"strings"
 
-func parseInt(x string) int {
-	i, _ := strconv.ParseInt(x, 0, 0)
-	return int(i)
+	"github.com/fogleman/fauxgl"
+	"github.com/fogleman/ribbon/pdb"
+)
+
+func atomPosition(a *pdb.Atom) fauxgl.Vector {
+	return fauxgl.Vector{a.X, a.Y, a.Z}
 }
 
-func parseFloat(x string) float64 {
-	f, _ := strconv.ParseFloat(x, 64)
-	return f
+func atomElement(a *pdb.Atom) Element {
+	return ElementsBySymbol[strings.Title(strings.ToLower(a.Element))]
 }

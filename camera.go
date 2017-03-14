@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/fogleman/fauxgl"
+	"github.com/fogleman/ribbon/pdb"
 )
 
 type Camera struct {
@@ -12,6 +13,17 @@ type Camera struct {
 	Center fauxgl.Vector
 	Up     fauxgl.Vector
 	Fovy   float64
+}
+
+func PositionCamera(model *pdb.Model, matrix fauxgl.Matrix) Camera {
+	var points []fauxgl.Vector
+	for _, r := range model.Residues {
+		points = append(points, atomPosition(r.AtomsByName["CA"]))
+	}
+	for i, point := range points {
+		points[i] = matrix.MulPosition(point)
+	}
+	return makeCamera(points)
 }
 
 func makeCamera(points []fauxgl.Vector) Camera {

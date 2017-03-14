@@ -100,6 +100,8 @@ func (r *Reader) Read() (*Model, error) {
 	if !ok {
 		return nil, io.EOF
 	}
+	residues := residuesForAtoms(atoms, helixes, strands)
+	chains := chainsForResidues(residues)
 	model := Model{}
 	model.Atoms = atoms
 	model.HetAtoms = hetAtoms
@@ -108,5 +110,7 @@ func (r *Reader) Read() (*Model, error) {
 	model.Strands = strands
 	model.BioMatrixes = bioMatrixes
 	model.SymMatrixes = symMatrixes
+	model.Residues = residues
+	model.Chains = chains
 	return &model, nil
 }

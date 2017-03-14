@@ -8,6 +8,7 @@ import (
 
 	. "github.com/fogleman/fauxgl"
 	"github.com/fogleman/ribbon"
+	"github.com/fogleman/ribbon/pdb"
 	"github.com/nfnt/resize"
 )
 
@@ -95,11 +96,16 @@ func main() {
 	var done func()
 
 	done = timed("loading pdb file")
-	model, err := ribbon.LoadPDB(os.Args[1])
-	done()
+	file, err := os.Open(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
+	r := pdb.NewReader(file)
+	model, err := r.Read()
+	if err != nil {
+		log.Fatal(err)
+	}
+	done()
 
 	fmt.Printf("atoms       = %d\n", len(model.Atoms))
 	fmt.Printf("residues    = %d\n", len(model.Residues))
@@ -121,7 +127,7 @@ func main() {
 	// fmt.Println(min, max)
 
 	done = timed("generating triangle mesh")
-	mesh := model.Mesh()
+	mesh := ribbon.ModelMesh(model)
 	done()
 
 	fmt.Printf("triangles   = %d\n", len(mesh.Triangles))
@@ -133,7 +139,7 @@ func main() {
 	// return
 
 	done = timed("finding ideal camera position")
-	camera := model.Camera(m)
+	camera := ribbon.PositionCamera(model, m)
 	eye = camera.Eye
 	center = camera.Center
 	up = camera.Up

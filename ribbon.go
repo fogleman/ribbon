@@ -5,6 +5,7 @@ import (
 
 	"github.com/fogleman/ease"
 	"github.com/fogleman/fauxgl"
+	"github.com/fogleman/ribbon/pdb"
 )
 
 func ellipseProfile(n int, w, h float64) []fauxgl.Vector {
@@ -92,7 +93,7 @@ func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 	return result
 }
 
-func geometryProfile(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
+func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	s0 := pp1.Residue1.Secondary
 	s1, s2 := pp1.Transition()
 	const ribbonWidth = 2
@@ -111,36 +112,36 @@ func geometryProfile(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 		offset2 = -offset2
 	}
 	switch s1 {
-	case SecondaryHelix:
-		if s0 == SecondaryStrand {
+	case pdb.SecondaryHelix:
+		if s0 == pdb.SecondaryStrand {
 			p1 = roundedRectangleProfile(n, 0, 0)
 		} else {
 			p1 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
 		}
 		p1 = translateProfile(p1, 0, offset1)
-	case SecondaryStrand:
-		if s2 == SecondaryStrand {
+	case pdb.SecondaryStrand:
+		if s2 == pdb.SecondaryStrand {
 			p1 = rectangleProfile(n, arrowWidth, arrowHeight)
 		} else {
 			p1 = rectangleProfile(n, arrowHeadWidth, arrowHeight)
 		}
 	default:
-		if s0 == SecondaryStrand {
+		if s0 == pdb.SecondaryStrand {
 			p1 = ellipseProfile(n, 0, 0)
 		} else {
 			p1 = ellipseProfile(n, tubeSize, tubeSize)
 		}
 	}
 	switch s2 {
-	case SecondaryHelix:
+	case pdb.SecondaryHelix:
 		p2 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
 		p2 = translateProfile(p2, 0, offset2)
-	case SecondaryStrand:
+	case pdb.SecondaryStrand:
 		p2 = rectangleProfile(n, arrowWidth, arrowHeight)
 	default:
 		p2 = ellipseProfile(n, tubeSize, tubeSize)
 	}
-	if s1 == SecondaryStrand && s2 != SecondaryStrand {
+	if s1 == pdb.SecondaryStrand && s2 != pdb.SecondaryStrand {
 		p2 = rectangleProfile(n, 0, arrowHeight)
 	}
 	return
@@ -158,22 +159,22 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 	// return
 	s1, s2 := pp.Transition()
 	switch s1 {
-	case SecondaryHelix:
+	case pdb.SecondaryHelix:
 		c1 = fauxgl.HexColor("FFB733")
-	case SecondaryStrand:
+	case pdb.SecondaryStrand:
 		c1 = fauxgl.HexColor("F57336")
 	default:
 		c1 = fauxgl.HexColor("047878")
 	}
 	switch s2 {
-	case SecondaryHelix:
+	case pdb.SecondaryHelix:
 		c2 = fauxgl.HexColor("FFB733")
-	case SecondaryStrand:
+	case pdb.SecondaryStrand:
 		c2 = fauxgl.HexColor("F57336")
 	default:
 		c2 = fauxgl.HexColor("047878")
 	}
-	if s1 == SecondaryStrand {
+	if s1 == pdb.SecondaryStrand {
 		c2 = c1
 	}
 	return
@@ -185,15 +186,15 @@ func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh 
 	s0 := pp2.Residue1.Secondary
 	s1, s2 := pp2.Transition()
 	c1, c2 := segmentColors(pp2)
-	profile1, profile2 := geometryProfile(pp2, pp3, profileDetail)
+	profile1, profile2 := segmentProfiles(pp2, pp3, profileDetail)
 	easeFunc := ease.Linear
-	if !(s1 == SecondaryStrand && s2 != SecondaryStrand) {
+	if !(s1 == pdb.SecondaryStrand && s2 != pdb.SecondaryStrand) {
 		easeFunc = ease.InOutQuad
 	}
-	if s0 == SecondaryStrand && s1 != SecondaryStrand {
+	if s0 == pdb.SecondaryStrand && s1 != pdb.SecondaryStrand {
 		easeFunc = ease.OutCirc
 	}
-	// if s1 != SecondaryStrand && s2 == SecondaryStrand {
+	// if s1 != pdb.SecondaryStrand && s2 == pdb.SecondaryStrand {
 	// 	easeFunc = ease.InOutSquare
 	// }
 	if i == 0 {
@@ -216,7 +217,7 @@ func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh 
 	for i := 0; i < splineSteps; i++ {
 		t0 := easeFunc(float64(i) / splineSteps)
 		t1 := easeFunc(float64(i+1) / splineSteps)
-		if i == 0 && s1 == SecondaryStrand && s2 != SecondaryStrand {
+		if i == 0 && s1 == pdb.SecondaryStrand && s2 != pdb.SecondaryStrand {
 			p00 := splines1[0][i]
 			p10 := splines1[profileDetail/4][i]
 			p11 := splines1[2*profileDetail/4][i]
@@ -260,15 +261,23 @@ func triangulateQuad(triangles []*fauxgl.Triangle, p1, p2, p3, p4 fauxgl.Vector,
 	return triangles
 }
 
-func createChainMesh(chain *Chain) *fauxgl.Mesh {
+func createChainMesh(chain *pdb.Chain) *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
-	n := len(chain.PeptidePlanes) - 3
+	var planes []*PeptidePlane
+	for i := 0; i < len(chain.Residues)-2; i++ {
+		r1 := chain.Residues[i]
+		r2 := chain.Residues[i+1]
+		r3 := chain.Residues[i+2]
+		plane := NewPeptidePlane(r1, r2, r3)
+		planes = append(planes, plane)
+	}
+	n := len(planes) - 3
 	for i := 0; i < n; i++ {
 		// TODO: handle ends better
-		pp1 := chain.PeptidePlanes[i]
-		pp2 := chain.PeptidePlanes[i+1]
-		pp3 := chain.PeptidePlanes[i+2]
-		pp4 := chain.PeptidePlanes[i+3]
+		pp1 := planes[i]
+		pp2 := planes[i+1]
+		pp3 := planes[i+2]
+		pp4 := planes[i+3]
 		m := createSegmentMesh(i, n, pp1, pp2, pp3, pp4)
 		mesh.Add(m)
 	}

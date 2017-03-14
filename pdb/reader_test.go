@@ -24,6 +24,8 @@ func TestReader(t *testing.T) {
 		fmt.Println(len(model.Strands))
 		fmt.Println(len(model.BioMatrixes))
 		fmt.Println(len(model.SymMatrixes))
+		fmt.Println(len(model.Residues))
+		fmt.Println(len(model.Chains))
 		fmt.Println()
 	}
 }

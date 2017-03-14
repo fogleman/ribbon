@@ -1,11 +1,14 @@
 package ribbon
 
-import "github.com/fogleman/fauxgl"
+import (
+	"github.com/fogleman/fauxgl"
+	"github.com/fogleman/ribbon/pdb"
+)
 
 type PeptidePlane struct {
-	Residue1 *Residue
-	Residue2 *Residue
-	Residue3 *Residue
+	Residue1 *pdb.Residue
+	Residue2 *pdb.Residue
+	Residue3 *pdb.Residue
 	Position fauxgl.Vector
 	Normal   fauxgl.Vector
 	Forward  fauxgl.Vector
@@ -13,25 +16,20 @@ type PeptidePlane struct {
 	Flipped  bool
 }
 
-func NewPeptidePlane(r1, r2, r3 *Residue) *PeptidePlane {
-	if r1.ChainID != r2.ChainID || r2.ChainID != r3.ChainID {
-		return nil
-	}
-	ca1 := r1.Atoms["CA"]
-	ca2 := r2.Atoms["CA"]
-	o1 := r1.Atoms["O"]
-	if ca1 == nil || ca2 == nil || o1 == nil {
-		return nil
-	}
-	a := ca2.Position.Sub(ca1.Position).Normalize()
-	b := o1.Position.Sub(ca1.Position).Normalize()
+func NewPeptidePlane(r1, r2, r3 *pdb.Residue) *PeptidePlane {
+	// TODO: handle missing required atoms
+	ca1 := atomPosition(r1.AtomsByName["CA"])
+	ca2 := atomPosition(r2.AtomsByName["CA"])
+	o1 := atomPosition(r1.AtomsByName["O"])
+	a := ca2.Sub(ca1).Normalize()
+	b := o1.Sub(ca1).Normalize()
 	c := a.Cross(b).Normalize()
 	d := c.Cross(a).Normalize()
-	p := ca1.Position.Add(ca2.Position).DivScalar(2)
+	p := ca1.Add(ca2).DivScalar(2)
 	return &PeptidePlane{r1, r2, r3, p, c, a, d, false}
 }
 
-func (pp *PeptidePlane) Transition() (s1, s2 Secondary) {
+func (pp *PeptidePlane) Transition() (s1, s2 pdb.Secondary) {
 	t1 := pp.Residue1.Secondary
 	t2 := pp.Residue2.Secondary
 	t3 := pp.Residue3.Secondary
