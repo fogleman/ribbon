@@ -271,6 +271,13 @@ func createChainMesh(chain *pdb.Chain) *fauxgl.Mesh {
 		plane := NewPeptidePlane(r1, r2, r3)
 		planes = append(planes, plane)
 	}
+	var previous fauxgl.Vector
+	for i, p := range planes {
+		if i > 0 && p.Side.Dot(previous) < 0 {
+			p.Flip()
+		}
+		previous = p.Side
+	}
 	n := len(planes) - 3
 	for i := 0; i < n; i++ {
 		// TODO: handle ends better
