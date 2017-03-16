@@ -26,6 +26,8 @@ $ rcsb 4hhb  # generates 4hhb.png and 4hhb.stl
 
 ### Package `pdb`
 
+[Documentation](https://godoc.org/github.com/fogleman/ribbon/pdb)
+
 The `pdb` package parses PDB files. The following entities are currently parsed:
 
 ```
@@ -46,6 +48,8 @@ Additionally, some higher-level constructs are produced:
 ```
 
 ### Package `ribbon`
+
+[Documentation](https://godoc.org/github.com/fogleman/ribbon/ribbon)
 
 The `ribbon` package generates 3D meshes given a `pdb.Model`. It can produce the following types of meshes:
 
