@@ -1,6 +1,6 @@
 # Protein Ribbon Diagrams
 
-Ribbon diagrams of proteins in pure Go.
+Render ribbon diagrams of proteins in pure Go.
 
 ![4HHB](http://i.imgur.com/UFprBGt.png)
 
