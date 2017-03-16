@@ -18,6 +18,10 @@ Provide a 4-digit RCSB Structure ID. The PDB file will automatically be download
 $ rcsb 4hhb  # generates 4hhb.png and 4hhb.stl
 ```
 
+### TODO
+
+Many features are not well exposed. It's not currently easy to configure things without changing code. This is what I hope to improve as I continue working on this project.
+
 ### Package `pdb`
 
 The `pdb` package parses PDB files. The following entities are currently parsed:
