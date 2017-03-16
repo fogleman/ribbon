@@ -1,6 +1,6 @@
 # Protein Ribbon Diagrams
 
-Render ribbon diagrams of proteins in pure Go.
+Parse PDB files and render ribbon diagrams of proteins in pure Go.
 
 ![4HHB](http://i.imgur.com/UFprBGt.png)
 
@@ -17,6 +17,12 @@ Provide a 4-digit RCSB Structure ID. The PDB file will automatically be download
 ```bash
 $ rcsb 4hhb  # generates 4hhb.png and 4hhb.stl
 ```
+
+### Resources
+
+[RCSB Protein Data Bank](http://www.rcsb.org/) - Find PDB files of proteins here. Over 100,000 in the database.
+
+[PDB File Format](http://www.wwpdb.org/documentation/file-format-content/format33/v3.3.html) - Details on the PDB file format.
 
 ### Package `pdb`
 
