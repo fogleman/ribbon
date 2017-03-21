@@ -128,29 +128,39 @@ func BackboneMesh(model *pdb.Model) *fauxgl.Mesh {
 func LineMesh(model *pdb.Model) *fauxgl.Mesh {
 	var lines []*fauxgl.Line
 
-	for _, chain := range model.Chains {
-		var planes []*PeptidePlane
-		for i := 0; i < len(chain.Residues)-2; i++ {
-			r1 := chain.Residues[i]
-			r2 := chain.Residues[i+1]
-			r3 := chain.Residues[i+2]
-			plane := NewPeptidePlane(r1, r2, r3)
-			if plane != nil {
-				planes = append(planes, plane)
+	for x := -2; x <= 2; x++ {
+		u := float64(x) / 4
+		for _, chain := range model.Chains {
+			var planes []*PeptidePlane
+			for i := 0; i < len(chain.Residues)-2; i++ {
+				r1 := chain.Residues[i]
+				r2 := chain.Residues[i+1]
+				r3 := chain.Residues[i+2]
+				plane := NewPeptidePlane(r1, r2, r3)
+				if plane != nil {
+					planes = append(planes, plane)
+				}
 			}
-		}
-		n := len(planes) - 3
-		for i := 0; i < n; i++ {
-			p1 := planes[i]
-			p2 := planes[i+1]
-			p3 := planes[i+2]
-			p4 := planes[i+3]
-			p := splineForPlanes(p1, p2, p3, p4, 16, 0, 0)
-			for j := 1; j < len(p); j++ {
-				v1 := fauxgl.Vector{p[j-1].X, p[j-1].Y, p[j-1].Z}
-				v2 := fauxgl.Vector{p[j].X, p[j].Y, p[j].Z}
-				line := fauxgl.NewLineForPoints(v1, v2)
-				lines = append(lines, line)
+			var previous fauxgl.Vector
+			for i, p := range planes {
+				if i > 0 && p.Side.Dot(previous) < 0 {
+					p.Flip()
+				}
+				previous = p.Side
+			}
+			n := len(planes) - 3
+			for i := 0; i < n; i++ {
+				p1 := planes[i]
+				p2 := planes[i+1]
+				p3 := planes[i+2]
+				p4 := planes[i+3]
+				p := splineForPlanes(p1, p2, p3, p4, 8, u, 0)
+				for j := 1; j < len(p); j++ {
+					v1 := fauxgl.Vector{p[j-1].X, p[j-1].Y, p[j-1].Z}
+					v2 := fauxgl.Vector{p[j].X, p[j].Y, p[j].Z}
+					line := fauxgl.NewLineForPoints(v1, v2)
+					lines = append(lines, line)
+				}
 			}
 		}
 	}

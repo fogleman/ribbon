@@ -37,7 +37,7 @@ func main() {
 		v1 = v1.DivScalar(v1.W)
 		v2 := matrix.MulPositionW(line.V2.Position)
 		v2 = v2.DivScalar(v2.W)
-		fmt.Printf("[(%g, %g), (%g, %g)],\n", v1.X, v1.Y, v2.X, v2.Y)
+		fmt.Printf("%g,%g;%g,%g\n", v1.X, v1.Y, v2.X, v2.Y)
 	}
 }
 
