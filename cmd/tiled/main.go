@@ -3,6 +3,8 @@ package main
 import (
 	"compress/gzip"
 	"fmt"
+	"image"
+	"image/draw"
 	"log"
 	"math"
 	"net/http"
@@ -17,8 +19,8 @@ import (
 )
 
 const (
-	size  = 256
-	scale = 4
+	scale    = 4
+	baseZoom = 3
 )
 
 func main() {
@@ -62,20 +64,19 @@ func main() {
 	c := ribbon.PositionCamera(model, m)
 	done()
 
-	// done = timed("writing mesh to disk")
-	// mesh.SaveSTL(fmt.Sprintf("%s.stl", structureID))
-	// done()
-
 	// render
-	context := NewContext(1024*scale, 1024*scale)
-	for z := 0; z < 8; z++ {
+	subTiles := int(math.Pow(2, baseZoom))
+	size := 256 * subTiles
+	context := NewContext(size*scale, size*scale)
+	for z := 3; z < 8; z++ {
 		i := int(math.Pow(2, float64(z)))
 		for x := 0; x < i; x++ {
 			for y := 0; y < i; y++ {
 				done = timed("rendering image")
 				context.ClearColorBufferWith(HexColor("1D181F"))
 				context.ClearDepthBuffer()
-				matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 100)
+				matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy*1.75, 1, 1, 100)
+				matrix = matrix.Rotate(V(0, 0, 1), Radians(-100))
 				matrix = matrix.Viewport(float64(-1-x*2), float64(-1-y*2), float64(2*i), float64(2*i))
 				light := c.Eye.Sub(c.Center).Normalize()
 				shader := NewPhongShader(matrix, light, c.Eye)
@@ -85,16 +86,28 @@ func main() {
 				context.DrawTriangles(mesh.Triangles)
 				done()
 
-				// save image
 				done = timed("downsampling image")
 				image := context.Image()
-				image = resize.Resize(1024, 1024, image, resize.Bilinear)
+				image = resize.Resize(uint(size), uint(size), image, resize.Bilinear)
 				done()
 
-				done = timed("writing image to disk")
-				SavePNG(fmt.Sprintf("tiles/%d.%d.%d.png", z, x, i-y-1), image)
+				done = timed("writing tiles to disk")
+				saveTiles(image, x*subTiles, (i-y-1)*subTiles, subTiles, z+baseZoom)
 				done()
 			}
+		}
+	}
+}
+
+func saveTiles(im image.Image, i, j, n, z int) {
+	const ts = 256
+	tile := image.NewNRGBA(image.Rect(0, 0, ts, ts))
+	for y := 0; y < n; y++ {
+		for x := 0; x < n; x++ {
+			path := fmt.Sprintf("tiles/%d.%d.%d.png", z, x+i, y+j)
+			fmt.Println(path)
+			draw.Draw(tile, tile.Bounds(), im, image.Pt(x*ts, y*ts), draw.Src)
+			SavePNG(path, tile)
 		}
 	}
 }
