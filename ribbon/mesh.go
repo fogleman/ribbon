@@ -128,7 +128,8 @@ func BackboneMesh(model *pdb.Model) *fauxgl.Mesh {
 func LineMesh(model *pdb.Model) *fauxgl.Mesh {
 	var lines []*fauxgl.Line
 
-	for x := -2; x <= 2; x++ {
+	const n = 2
+	for x := -n; x <= n; x++ {
 		u := float64(x) / 4
 		for _, chain := range model.Chains {
 			var planes []*PeptidePlane
@@ -154,7 +155,7 @@ func LineMesh(model *pdb.Model) *fauxgl.Mesh {
 				p2 := planes[i+1]
 				p3 := planes[i+2]
 				p4 := planes[i+3]
-				p := splineForPlanes(p1, p2, p3, p4, 8, u, 0)
+				p := splineForPlanes(p1, p2, p3, p4, 4, u, 0)
 				for j := 1; j < len(p); j++ {
 					v1 := fauxgl.Vector{p[j-1].X, p[j-1].Y, p[j-1].Z}
 					v2 := fauxgl.Vector{p[j].X, p[j].Y, p[j].Z}

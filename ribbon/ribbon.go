@@ -99,10 +99,10 @@ func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	const ribbonWidth = 2
 	const ribbonHeight = 0.125
 	const ribbonOffset = 1.5
-	const arrowHeadWidth = 3
+	const arrowHeadWidth = 2
 	const arrowWidth = 2
 	const arrowHeight = 0.5
-	const tubeSize = 0.75
+	const tubeSize = 0.5
 	offset1 := ribbonOffset
 	offset2 := ribbonOffset
 	if pp1.Flipped {
@@ -126,11 +126,11 @@ func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 			p1 = rectangleProfile(n, arrowHeadWidth, arrowHeight)
 		}
 	default:
-		if type0 == pdb.ResidueTypeStrand {
-			p1 = ellipseProfile(n, 0, 0)
-		} else {
-			p1 = ellipseProfile(n, tubeSize, tubeSize)
-		}
+		// if type0 == pdb.ResidueTypeStrand {
+		// 	p1 = ellipseProfile(n, 0, 0)
+		// } else {
+		p1 = ellipseProfile(n, tubeSize, tubeSize)
+		// }
 	}
 	switch type2 {
 	case pdb.ResidueTypeHelix:
@@ -141,9 +141,9 @@ func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	default:
 		p2 = ellipseProfile(n, tubeSize, tubeSize)
 	}
-	if type1 == pdb.ResidueTypeStrand && type2 != pdb.ResidueTypeStrand {
-		p2 = rectangleProfile(n, 0, arrowHeight)
-	}
+	// if type1 == pdb.ResidueTypeStrand && type2 != pdb.ResidueTypeStrand {
+	// 	p2 = rectangleProfile(n, 0, arrowHeight)
+	// }
 	return
 }
 
@@ -180,17 +180,18 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 	return
 }
 
+const splineSteps = 64
+const profileDetail = 32
+
 func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
-	const splineSteps = 32
-	const profileDetail = 16
 	type0 := pp2.Residue1.Type
 	type1, type2 := pp2.Transition()
 	c1, c2 := segmentColors(pp2)
 	profile1, profile2 := segmentProfiles(pp2, pp3, profileDetail)
 	easeFunc := ease.Linear
-	if !(type1 == pdb.ResidueTypeStrand && type2 != pdb.ResidueTypeStrand) {
-		easeFunc = ease.InOutQuad
-	}
+	// if !(type1 == pdb.ResidueTypeStrand && type2 != pdb.ResidueTypeStrand) {
+	easeFunc = ease.InOutQuad
+	// }
 	if type0 == pdb.ResidueTypeStrand && type1 != pdb.ResidueTypeStrand {
 		easeFunc = ease.OutCirc
 	}
@@ -242,6 +243,8 @@ func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh 
 			c10 := c1.Lerp(c2, t0)
 			c11 := c1.Lerp(c2, t1)
 			triangles = triangulateQuad(triangles, p10, p11, p01, p00, c10, c11, c01, c00)
+			t := triangles[len(triangles)-1]
+			lines = append(lines, fauxgl.NewLine(t.V3, t.V2))
 		}
 	}
 	return fauxgl.NewMesh(triangles, lines)
@@ -291,5 +294,16 @@ func createChainMesh(chain *pdb.Chain) *fauxgl.Mesh {
 		m := createSegmentMesh(i, n, pp1, pp2, pp3, pp4)
 		mesh.Add(m)
 	}
+
+	lines := make([]*fauxgl.Line, len(mesh.Lines))
+	for i, line := range mesh.Lines {
+		p := i % profileDetail
+		s := (i / profileDetail) % splineSteps
+		j := (i / profileDetail / splineSteps) % n
+		index := s + j*splineSteps + p*splineSteps*n
+		lines[index] = line
+	}
+	mesh.Lines = lines
+
 	return mesh
 }
