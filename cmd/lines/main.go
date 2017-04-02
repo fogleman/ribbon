@@ -27,12 +27,22 @@ func main() {
 		log.Fatal(err)
 	}
 	model := models[0]
-	mesh := ribbon.LineMesh(model)
+	mesh := ribbon.RibbonMesh(model)
 	m := mesh.BiUnitCube()
 	c := ribbon.PositionCamera(model, m)
+	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 20)
 
-	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 100)
+	context := NewContext(8192, 8192)
+	context.Shader = NewSolidColorShader(matrix, Black)
+	context.DrawTriangles(mesh.Triangles)
+
+	context.DepthBias = -1e-5
 	for _, line := range mesh.Lines {
+		info := context.DrawLine(line)
+		ratio := float64(info.UpdatedPixels) / float64(info.TotalPixels)
+		if ratio < 0.5 {
+			continue
+		}
 		v1 := matrix.MulPositionW(line.V1.Position)
 		v1 = v1.DivScalar(v1.W)
 		v2 := matrix.MulPositionW(line.V2.Position)
