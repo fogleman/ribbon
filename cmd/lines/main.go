@@ -32,9 +32,15 @@ func main() {
 	c := ribbon.PositionCamera(model, m)
 	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 20)
 
+	mesh2 := ribbon.HetMesh(model)
+	mesh2.Transform(m)
+	mesh2.OutlineTriangles(c.Center.Sub(c.Eye).Normalize())
+	mesh.Add(mesh2)
+
 	context := NewContext(8192, 8192)
 	context.Shader = NewSolidColorShader(matrix, Black)
 	context.DrawTriangles(mesh.Triangles)
+	SavePNG("out.png", context.Image())
 
 	context.DepthBias = -1e-5
 	for _, line := range mesh.Lines {
@@ -47,7 +53,7 @@ func main() {
 		v1 = v1.DivScalar(v1.W)
 		v2 := matrix.MulPositionW(line.V2.Position)
 		v2 = v2.DivScalar(v2.W)
-		fmt.Printf("%g,%g;%g,%g\n", v1.X, v1.Y, v2.X, v2.Y)
+		fmt.Printf("%g,%g;%g,%g\n", v1.X*c.Aspect, v1.Y, v2.X*c.Aspect, v2.Y)
 	}
 }
 

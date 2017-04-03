@@ -102,7 +102,7 @@ func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	const arrowHeadWidth = 2
 	const arrowWidth = 2
 	const arrowHeight = 0.5
-	const tubeSize = 1
+	const tubeSize = 0.75
 	offset1 := ribbonOffset
 	offset2 := ribbonOffset
 	if pp1.Flipped {

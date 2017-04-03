@@ -211,8 +211,8 @@ var (
 )
 
 func init() {
-	unitSphere = fauxgl.NewSphere(15, 15)
+	unitSphere = fauxgl.NewSphere(5, 5)
 	unitSphere.SmoothNormals()
-	unitCylinder = fauxgl.NewCylinder(15, false)
+	unitCylinder = fauxgl.NewCylinder(5, false)
 	// unitCylinder.SmoothNormals()
 }
