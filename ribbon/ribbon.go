@@ -94,15 +94,15 @@ func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 }
 
 func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
-	type0 := pp1.Residue1.Type
+	// type0 := pp1.Residue1.Type
 	type1, type2 := pp1.Transition()
-	const ribbonWidth = 2
-	const ribbonHeight = 0.125
+	const ribbonWidth = 3
+	const ribbonHeight = 0.75
 	const ribbonOffset = 1.5
 	const arrowHeadWidth = 3
-	const arrowWidth = 2
-	const arrowHeight = 0.5
-	const tubeSize = 0.75
+	const arrowWidth = 3
+	const arrowHeight = 0.75
+	const tubeSize = 1.5
 	offset1 := ribbonOffset
 	offset2 := ribbonOffset
 	if pp1.Flipped {
@@ -113,24 +113,24 @@ func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	}
 	switch type1 {
 	case pdb.ResidueTypeHelix:
-		if type0 == pdb.ResidueTypeStrand {
-			p1 = roundedRectangleProfile(n, 0, 0)
-		} else {
-			p1 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
-		}
+		// if type0 == pdb.ResidueTypeStrand {
+		// 	p1 = roundedRectangleProfile(n, 0, 0)
+		// } else {
+		p1 = roundedRectangleProfile(n, ribbonWidth, ribbonHeight)
+		// }
 		p1 = translateProfile(p1, 0, offset1)
 	case pdb.ResidueTypeStrand:
-		if type2 == pdb.ResidueTypeStrand {
-			p1 = rectangleProfile(n, arrowWidth, arrowHeight)
-		} else {
-			p1 = rectangleProfile(n, arrowHeadWidth, arrowHeight)
-		}
+		// if type2 == pdb.ResidueTypeStrand {
+		p1 = rectangleProfile(n, arrowWidth, arrowHeight)
+		// } else {
+		// 	p1 = rectangleProfile(n, arrowHeadWidth, arrowHeight)
+		// }
 	default:
-		if type0 == pdb.ResidueTypeStrand {
-			p1 = ellipseProfile(n, 0, 0)
-		} else {
-			p1 = ellipseProfile(n, tubeSize, tubeSize)
-		}
+		// if type0 == pdb.ResidueTypeStrand {
+		// 	p1 = ellipseProfile(n, 0, 0)
+		// } else {
+		p1 = ellipseProfile(n, tubeSize, tubeSize)
+		// }
 	}
 	switch type2 {
 	case pdb.ResidueTypeHelix:
@@ -141,9 +141,9 @@ func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	default:
 		p2 = ellipseProfile(n, tubeSize, tubeSize)
 	}
-	if type1 == pdb.ResidueTypeStrand && type2 != pdb.ResidueTypeStrand {
-		p2 = rectangleProfile(n, 0, arrowHeight)
-	}
+	// if type1 == pdb.ResidueTypeStrand && type2 != pdb.ResidueTypeStrand {
+	// 	p2 = rectangleProfile(n, 0, arrowHeight)
+	// }
 	return
 }
 
@@ -181,19 +181,19 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 }
 
 func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
-	const splineSteps = 32
+	const splineSteps = 16
 	const profileDetail = 16
-	type0 := pp2.Residue1.Type
+	// type0 := pp2.Residue1.Type
 	type1, type2 := pp2.Transition()
 	c1, c2 := segmentColors(pp2)
 	profile1, profile2 := segmentProfiles(pp2, pp3, profileDetail)
 	easeFunc := ease.Linear
-	if !(type1 == pdb.ResidueTypeStrand && type2 != pdb.ResidueTypeStrand) {
-		easeFunc = ease.InOutQuad
-	}
-	if type0 == pdb.ResidueTypeStrand && type1 != pdb.ResidueTypeStrand {
-		easeFunc = ease.OutCirc
-	}
+	// if !(type1 == pdb.ResidueTypeStrand && type2 != pdb.ResidueTypeStrand) {
+	easeFunc = ease.InOutQuad
+	// }
+	// if type0 == pdb.ResidueTypeStrand && type1 != pdb.ResidueTypeStrand {
+	// 	easeFunc = ease.OutCirc
+	// }
 	// if type1 != pdb.ResidueTypeStrand && type2 == pdb.ResidueTypeStrand {
 	// 	easeFunc = ease.InOutSquare
 	// }

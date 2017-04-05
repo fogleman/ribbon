@@ -62,6 +62,7 @@ func main() {
 	done()
 
 	done = timed("writing mesh to disk")
+	mesh.Transform(Scale(V(3, 3, 3)))
 	mesh.SaveSTL(fmt.Sprintf("%s.stl", structureID))
 	done()
 

@@ -8,7 +8,7 @@ import (
 func ModelMesh(model *pdb.Model) *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	mesh.Add(RibbonMesh(model))
-	mesh.Add(HetMesh(model))
+	// mesh.Add(HetMesh(model))
 	// mesh.Add(SpaceFillingMesh(model))
 	// mesh.Add(BackboneMesh(model))
 

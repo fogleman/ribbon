@@ -100,6 +100,8 @@ func (r *Reader) Read() (*Model, error) {
 	if !ok {
 		return nil, io.EOF
 	}
+	// helixes = nil
+	// strands = nil
 	residues := residuesForAtoms(atoms, helixes, strands)
 	chains := chainsForResidues(residues)
 	model := Model{}
