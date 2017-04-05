@@ -27,22 +27,20 @@ func main() {
 		log.Fatal(err)
 	}
 	model := models[0]
-	mesh := ribbon.RibbonMesh(model)
-	m := mesh.BiUnitCube()
-	c := ribbon.PositionCamera(model, m)
-	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 20)
 
-	mesh2 := ribbon.HetMesh(model)
-	mesh2.Transform(m)
-	mesh2.OutlineTriangles(c.Center.Sub(c.Eye).Normalize())
-	mesh.Add(mesh2)
+	// mesh := ribbon.RibbonMesh(model)
+	c := ribbon.PositionCamera(model)
+	// mesh.Add(ribbon.HetMesh(model, &c))
+	mesh := ribbon.HetMesh(model, &c)
+
+	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 10000)
 
 	context := NewContext(8192, 8192)
 	context.Shader = NewSolidColorShader(matrix, Black)
 	context.DrawTriangles(mesh.Triangles)
 	SavePNG("out.png", context.Image())
 
-	context.DepthBias = -1e-5
+	context.DepthBias = -3e-7
 	for _, line := range mesh.Lines {
 		info := context.DrawLine(line)
 		ratio := float64(info.UpdatedPixels) / float64(info.TotalPixels)

@@ -5,10 +5,10 @@ import (
 	"github.com/fogleman/ribbon/pdb"
 )
 
-func ModelMesh(model *pdb.Model) *fauxgl.Mesh {
+func ModelMesh(model *pdb.Model, camera *Camera) *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	mesh.Add(RibbonMesh(model))
-	mesh.Add(HetMesh(model))
+	mesh.Add(HetMesh(model, camera))
 	// mesh.Add(SpaceFillingMesh(model))
 	// mesh.Add(BackboneMesh(model))
 
@@ -45,7 +45,7 @@ func RibbonMesh(model *pdb.Model) *fauxgl.Mesh {
 	return mesh
 }
 
-func HetMesh(model *pdb.Model) *fauxgl.Mesh {
+func HetMesh(model *pdb.Model, camera *Camera) *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	atomsBySerial := make(map[int]*pdb.Atom)
 	for _, a := range model.HetAtoms {
@@ -60,6 +60,9 @@ func HetMesh(model *pdb.Model) *fauxgl.Mesh {
 		m.Transform(fauxgl.Scale(s).Translate(atomPosition(a)))
 		m.SetColor(fauxgl.HexColor(e.HexColor))
 		mesh.Add(m)
+		if camera != nil {
+			mesh.Add(OutlineSphere(camera.Eye, camera.Up, atomPosition(a), r))
+		}
 	}
 	for _, c := range model.Connections {
 		if c.Serial1 > c.Serial2 {
@@ -68,6 +71,9 @@ func HetMesh(model *pdb.Model) *fauxgl.Mesh {
 		a1 := atomsBySerial[c.Serial1]
 		a2 := atomsBySerial[c.Serial2]
 		mesh.Add(makeConnection(a1, a2))
+		if camera != nil && a1 != nil && a2 != nil {
+			mesh.Add(OutlineCylinder(camera.Eye, camera.Up, atomPosition(a1), atomPosition(a2), 0.25))
+		}
 	}
 	return mesh
 }

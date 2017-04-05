@@ -17,22 +17,22 @@ type Camera struct {
 }
 
 var DefaultCamera = Camera{
-	fauxgl.Vector{5, 0, 0},
+	fauxgl.Vector{0, 0, 5},
 	fauxgl.Vector{0, 0, 0},
 	fauxgl.Vector{0, 1, 0},
 	30, 1,
 }
 
-func PositionCamera(model *pdb.Model, matrix fauxgl.Matrix) Camera {
+func PositionCamera(model *pdb.Model) Camera {
 	var points []fauxgl.Vector
 	// for _, m := range model.SymMatrixes {
-	// 	mat := fauxgl.Matrix{
+	// 	matrix := fauxgl.Matrix{
 	// 		m[0][0], m[0][1], m[0][2], m[0][3],
 	// 		m[1][0], m[1][1], m[1][2], m[1][3],
 	// 		m[2][0], m[2][1], m[2][2], m[2][3],
 	// 		m[3][0], m[3][1], m[3][2], m[3][3],
 	// 	}
-	mat := fauxgl.Identity()
+	matrix := fauxgl.Identity()
 	for _, r := range model.Residues {
 		if _, ok := r.AtomsByName["CA"]; !ok {
 			continue
@@ -40,24 +40,21 @@ func PositionCamera(model *pdb.Model, matrix fauxgl.Matrix) Camera {
 		if _, ok := r.AtomsByName["O"]; !ok {
 			continue
 		}
-		points = append(points, mat.MulPosition(atomPosition(r.AtomsByName["CA"])))
-		points = append(points, mat.MulPosition(atomPosition(r.AtomsByName["O"])))
+		points = append(points, matrix.MulPosition(atomPosition(r.AtomsByName["CA"])))
+		points = append(points, matrix.MulPosition(atomPosition(r.AtomsByName["O"])))
 	}
 	// }
 	for _, a := range model.HetAtoms {
-		points = append(points, mat.MulPosition(atomPosition(a)))
+		points = append(points, matrix.MulPosition(atomPosition(a)))
 	}
 	if len(points) == 0 {
 		return DefaultCamera
-	}
-	for i, point := range points {
-		points[i] = matrix.MulPosition(point)
 	}
 	return makeCamera(points)
 }
 
 func makeCamera(points []fauxgl.Vector) Camera {
-	const D = 10
+	const D = 1000
 	up := fauxgl.Vector{0, 0, 1}
 
 	min := points[0]
@@ -104,6 +101,7 @@ func makeCamera(points []fauxgl.Vector) Camera {
 	aspect := bestAspect
 	up = bestUp
 	fovy := bestFovy * 1.1
+	// up = fauxgl.Vector{0, 0, 1}
 
 	return Camera{eye, center, up, fovy, aspect}
 }
