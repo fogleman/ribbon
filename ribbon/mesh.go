@@ -5,6 +5,11 @@ import (
 	"github.com/fogleman/ribbon/pdb"
 )
 
+const (
+	cylinderRadius     = 0.2
+	elementRadiusScale = 0.8
+)
+
 func ModelMesh(model *pdb.Model, camera *Camera) *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	mesh.Add(RibbonMesh(model))
@@ -54,7 +59,7 @@ func HetMesh(model *pdb.Model, camera *Camera) *fauxgl.Mesh {
 		}
 		atomsBySerial[a.Serial] = a
 		e := atomElement(a)
-		r := e.Radius * 0.75
+		r := e.Radius * elementRadiusScale
 		s := fauxgl.V(r, r, r)
 		m := unitSphere.Copy()
 		m.Transform(fauxgl.Scale(s).Translate(atomPosition(a)))
@@ -72,7 +77,13 @@ func HetMesh(model *pdb.Model, camera *Camera) *fauxgl.Mesh {
 		a2 := atomsBySerial[c.Serial2]
 		mesh.Add(makeConnection(a1, a2))
 		if camera != nil && a1 != nil && a2 != nil {
-			mesh.Add(OutlineCylinder(camera.Eye, camera.Up, atomPosition(a1), atomPosition(a2), 0.25))
+			p1 := atomPosition(a1)
+			p2 := atomPosition(a2)
+			r1 := atomElement(a1).Radius * elementRadiusScale
+			r2 := atomElement(a2).Radius * elementRadiusScale
+			mesh.Add(OutlineCylinder(camera.Eye, p1, p2, cylinderRadius))
+			mesh.Add(OutlineCylinderSphereIntersection(p1, p2, cylinderRadius, r1))
+			mesh.Add(OutlineCylinderSphereIntersection(p2, p1, cylinderRadius, r2))
 		}
 	}
 	return mesh
@@ -113,7 +124,7 @@ func BackboneMesh(model *pdb.Model) *fauxgl.Mesh {
 			m.SetColor(fauxgl.White)
 			mesh.Add(m)
 			o1 := atomPosition(residue.AtomsByName["O"])
-			m = makeCylinder(c1, o1, 0.25)
+			m = makeCylinder(c1, o1, cylinderRadius)
 			m.SetColor(fauxgl.HexColor(ElementsBySymbol["O"].HexColor))
 			mesh.Add(m)
 			m = makeSphere(o1, 0.25)
@@ -184,13 +195,13 @@ func makeConnection(a1, a2 *pdb.Atom) *fauxgl.Mesh {
 	e2 := atomElement(a2)
 	ap1 := atomPosition(a1)
 	ap2 := atomPosition(a2)
-	p1 := ap1.LerpDistance(ap2, e1.Radius*0.75-0.1)
-	p2 := ap2.LerpDistance(ap1, e2.Radius*0.75-0.1)
+	p1 := ap1.LerpDistance(ap2, e1.Radius*elementRadiusScale-0.1)
+	p2 := ap2.LerpDistance(ap1, e2.Radius*elementRadiusScale-0.1)
 	mid := p1.Lerp(p2, 0.5)
-	m := makeCylinder(p1, mid, 0.25)
+	m := makeCylinder(p1, mid, cylinderRadius)
 	m.SetColor(fauxgl.HexColor(e1.HexColor))
 	mesh.Add(m)
-	m = makeCylinder(mid, p2, 0.25)
+	m = makeCylinder(mid, p2, cylinderRadius)
 	m.SetColor(fauxgl.HexColor(e2.HexColor))
 	mesh.Add(m)
 	return mesh

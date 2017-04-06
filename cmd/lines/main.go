@@ -28,10 +28,10 @@ func main() {
 	}
 	model := models[0]
 
-	// mesh := ribbon.RibbonMesh(model)
 	c := ribbon.PositionCamera(model)
+	mesh := ribbon.ModelMesh(model, &c)
 	// mesh.Add(ribbon.HetMesh(model, &c))
-	mesh := ribbon.HetMesh(model, &c)
+	// mesh := ribbon.HetMesh(model, &c)
 
 	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 10000)
 
@@ -40,7 +40,7 @@ func main() {
 	context.DrawTriangles(mesh.Triangles)
 	SavePNG("out.png", context.Image())
 
-	context.DepthBias = -3e-7
+	context.DepthBias = -1e-8
 	for _, line := range mesh.Lines {
 		info := context.DrawLine(line)
 		ratio := float64(info.UpdatedPixels) / float64(info.TotalPixels)
