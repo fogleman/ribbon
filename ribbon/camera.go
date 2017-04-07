@@ -101,7 +101,6 @@ func makeCamera(points []fauxgl.Vector) Camera {
 	aspect := bestAspect
 	up = bestUp
 	fovy := bestFovy * 1.1
-	// up = fauxgl.Vector{0, 0, 1}
 
 	return Camera{eye, center, up, fovy, aspect}
 }
