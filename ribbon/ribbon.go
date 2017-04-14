@@ -8,6 +8,18 @@ import (
 	"github.com/fogleman/ribbon/pdb"
 )
 
+const (
+	splineSteps    = 64
+	profileDetail  = 16
+	ribbonWidth    = 2
+	ribbonHeight   = 0.25
+	ribbonOffset   = 1.5
+	arrowHeadWidth = 2.5
+	arrowWidth     = 2.5
+	arrowHeight    = 0.5
+	tubeSize       = 1
+)
+
 func ellipseProfile(n int, w, h float64) []fauxgl.Vector {
 	result := make([]fauxgl.Vector, n)
 	for i := range result {
@@ -96,13 +108,6 @@ func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	type0 := pp1.Residue1.Type
 	type1, type2 := pp1.Transition()
-	const ribbonWidth = 2
-	const ribbonHeight = 0.125
-	const ribbonOffset = 1.5
-	const arrowHeadWidth = 2
-	const arrowWidth = 2
-	const arrowHeight = 0.5
-	const tubeSize = 0.75
 	offset1 := ribbonOffset
 	offset2 := ribbonOffset
 	if pp1.Flipped {
@@ -180,9 +185,6 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 	return
 }
 
-const splineSteps = 32
-const profileDetail = 16
-
 func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
 	type0 := pp2.Residue1.Type
 	type1, type2 := pp2.Transition()
@@ -215,6 +217,7 @@ func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh 
 	}
 	var triangles []*fauxgl.Triangle
 	var lines []*fauxgl.Line
+	// nan := fauxgl.Vector{math.NaN(), math.NaN(), math.NaN()}
 	for i := 0; i < splineSteps; i++ {
 		t0 := easeFunc(float64(i) / splineSteps)
 		t1 := easeFunc(float64(i+1) / splineSteps)
@@ -245,6 +248,11 @@ func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh 
 			triangles = triangulateQuad(triangles, p10, p11, p01, p00, c10, c11, c01, c00)
 			t := triangles[len(triangles)-1]
 			lines = append(lines, fauxgl.NewLine(t.V3, t.V2))
+			// if j%3 != 0 && (type1 == pdb.ResidueTypeCoil || type2 == pdb.ResidueTypeCoil) {
+			// 	lines = append(lines, fauxgl.NewLineForPoints(nan, nan))
+			// } else {
+			// 	lines = append(lines, fauxgl.NewLine(t.V3, t.V2))
+			// }
 		}
 	}
 	return fauxgl.NewMesh(triangles, lines)

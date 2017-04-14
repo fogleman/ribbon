@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"strings"
@@ -51,6 +52,9 @@ func main() {
 		v1 = v1.DivScalar(v1.W)
 		v2 := matrix.MulPositionW(line.V2.Position)
 		v2 = v2.DivScalar(v2.W)
+		if math.IsNaN(v1.X) || math.IsNaN(v2.X) {
+			continue
+		}
 		fmt.Printf("%g,%g;%g,%g\n", v1.X*c.Aspect, v1.Y, v2.X*c.Aspect, v2.Y)
 	}
 }

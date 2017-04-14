@@ -25,6 +25,7 @@ var DefaultCamera = Camera{
 
 func PositionCamera(model *pdb.Model) Camera {
 	var points []fauxgl.Vector
+	matrix := fauxgl.Identity()
 	// for _, m := range model.SymMatrixes {
 	// 	matrix := fauxgl.Matrix{
 	// 		m[0][0], m[0][1], m[0][2], m[0][3],
@@ -32,7 +33,6 @@ func PositionCamera(model *pdb.Model) Camera {
 	// 		m[2][0], m[2][1], m[2][2], m[2][3],
 	// 		m[3][0], m[3][1], m[3][2], m[3][3],
 	// 	}
-	matrix := fauxgl.Identity()
 	for _, r := range model.Residues {
 		if _, ok := r.AtomsByName["CA"]; !ok {
 			continue
@@ -43,10 +43,10 @@ func PositionCamera(model *pdb.Model) Camera {
 		points = append(points, matrix.MulPosition(atomPosition(r.AtomsByName["CA"])))
 		points = append(points, matrix.MulPosition(atomPosition(r.AtomsByName["O"])))
 	}
-	// }
 	for _, a := range model.HetAtoms {
 		points = append(points, matrix.MulPosition(atomPosition(a)))
 	}
+	// }
 	if len(points) == 0 {
 		return DefaultCamera
 	}

@@ -45,6 +45,7 @@ func RibbonMesh(model *pdb.Model) *fauxgl.Mesh {
 			t.SetColor(Viridis.Color(p))
 		}
 		mesh.Add(m)
+		break
 	}
 	// mesh.SmoothNormalsThreshold(fauxgl.Radians(60))
 	return mesh
