@@ -57,7 +57,7 @@ func PositionCamera(model *pdb.Model, matrix fauxgl.Matrix) Camera {
 }
 
 func makeCamera(points []fauxgl.Vector) Camera {
-	const D = 10
+	const D = 1000
 	up := fauxgl.Vector{0, 0, 1}
 
 	min := points[0]

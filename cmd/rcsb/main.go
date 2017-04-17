@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	size  = 2048
+	size  = 1600
 	scale = 4
 )
 
@@ -47,35 +47,25 @@ func main() {
 	fmt.Printf("het-atoms   = %d\n", len(model.HetAtoms))
 	fmt.Printf("connections = %d\n", len(model.Connections))
 
-	done = timed("generating triangle mesh")
-	mesh := ribbon.ModelMesh(model)
-	done()
-
-	fmt.Printf("triangles   = %d\n", len(mesh.Triangles))
-
-	done = timed("transforming mesh")
-	m := mesh.BiUnitCube()
-	done()
-
 	done = timed("finding ideal camera position")
-	c := ribbon.PositionCamera(model, m)
-	done()
-
-	done = timed("writing mesh to disk")
-	mesh.SaveSTL(fmt.Sprintf("%s.stl", structureID))
+	c := ribbon.PositionCamera(model, Identity())
 	done()
 
 	// render
 	done = timed("rendering image")
 	context := NewContext(int(size*scale*c.Aspect), size*scale)
 	context.ClearColorBufferWith(HexColor("1D181F"))
-	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 100)
+	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 200, 2000)
 	light := c.Eye.Sub(c.Center).Normalize()
 	shader := NewPhongShader(matrix, light, c.Eye)
 	shader.AmbientColor = Gray(0.3)
 	shader.DiffuseColor = Gray(0.9)
 	context.Shader = shader
-	context.DrawTriangles(mesh.Triangles)
+	ch := make(chan *Mesh)
+	go ribbon.ModelMesh(model, ch)
+	for mesh := range ch {
+		context.DrawTriangles(mesh.Triangles)
+	}
 	done()
 
 	// save image
