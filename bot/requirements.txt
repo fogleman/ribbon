@@ -1,0 +1,2 @@
+python-twitter==3.2.1
+requests==2.13.0
