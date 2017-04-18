@@ -9,9 +9,6 @@ import xml.etree.ElementTree as ET
 
 RATE = 60 * 30
 
-INPUT_FOLDER = ''
-OUTPUT_FOLDER = ''
-
 TWITTER_CONSUMER_KEY = None
 TWITTER_CONSUMER_SECRET = None
 TWITTER_ACCESS_TOKEN_KEY = None
@@ -21,11 +18,6 @@ try:
     from config import *
 except ImportError:
     print 'no config found!'
-
-def download_photo(url, path):
-    r = requests.get(url)
-    with open(path, 'wb') as fp:
-        fp.write(r.content)
 
 def rcsb(structure_id):
     cmd = 'rcsb %s' % structure_id
