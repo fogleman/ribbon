@@ -96,13 +96,13 @@ func translateProfile(p []fauxgl.Vector, dx, dy float64) []fauxgl.Vector {
 func segmentProfiles(pp1, pp2 *PeptidePlane, n int) (p1, p2 []fauxgl.Vector) {
 	// type0 := pp1.Residue1.Type
 	type1, type2 := pp1.Transition()
-	const ribbonWidth = 3
-	const ribbonHeight = 0.75
+	const ribbonWidth = 3.5
+	const ribbonHeight = 1.5
 	const ribbonOffset = 1.5
-	const arrowHeadWidth = 3
-	const arrowWidth = 3
-	const arrowHeight = 0.75
-	const tubeSize = 1.5
+	const arrowHeadWidth = 4
+	const arrowWidth = 3.5
+	const arrowHeight = 1.5
+	const tubeSize = 2
 	offset1 := ribbonOffset
 	offset2 := ribbonOffset
 	if pp1.Flipped {
@@ -181,8 +181,8 @@ func segmentColors(pp *PeptidePlane) (c1, c2 fauxgl.Color) {
 }
 
 func createSegmentMesh(i, n int, pp1, pp2, pp3, pp4 *PeptidePlane) *fauxgl.Mesh {
-	const splineSteps = 16
-	const profileDetail = 16
+	const splineSteps = 32
+	const profileDetail = 64
 	// type0 := pp2.Residue1.Type
 	type1, type2 := pp2.Transition()
 	c1, c2 := segmentColors(pp2)

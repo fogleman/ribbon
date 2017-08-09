@@ -66,6 +66,8 @@ func main() {
 	mesh.SaveSTL(fmt.Sprintf("%s.stl", structureID))
 	done()
 
+	return
+
 	// render
 	done = timed("rendering image")
 	context := NewContext(int(size*scale*c.Aspect), size*scale)
