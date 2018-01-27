@@ -45,7 +45,7 @@ func RibbonMesh(model *pdb.Model) *fauxgl.Mesh {
 			t.SetColor(Viridis.Color(p))
 		}
 		mesh.Add(m)
-		break
+		// break
 	}
 	// mesh.SmoothNormalsThreshold(fauxgl.Radians(60))
 	return mesh
@@ -229,7 +229,7 @@ var (
 )
 
 func init() {
-	unitSphere = fauxgl.NewSphere(5, 5)
+	unitSphere = fauxgl.NewSphere(3)
 	unitSphere.SmoothNormals()
 	unitCylinder = fauxgl.NewCylinder(5, false)
 	// unitCylinder.SmoothNormals()
