@@ -24,10 +24,19 @@ func main() {
 	structureID := args[0]
 
 	models, err := downloadAndParse(structureID)
+	// models, err := parse(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
 	model := models[0]
+
+	// fmt.Printf("atoms       = %d\n", len(model.Atoms))
+	// fmt.Printf("residues    = %d\n", len(model.Residues))
+	// fmt.Printf("chains      = %d\n", len(model.Chains))
+	// fmt.Printf("helixes     = %d\n", len(model.Helixes))
+	// fmt.Printf("strands     = %d\n", len(model.Strands))
+	// fmt.Printf("het-atoms   = %d\n", len(model.HetAtoms))
+	// fmt.Printf("connections = %d\n", len(model.Connections))
 
 	c := ribbon.PositionCamera(model)
 	mesh := ribbon.ModelMesh(model, &c)
@@ -42,6 +51,17 @@ func main() {
 	SavePNG("out.png", context.Image())
 
 	context.DepthBias = -1e-8
+
+	// for _, t := range mesh.Triangles {
+	// 	e := t.V1.Position.Sub(c.Eye).Normalize()
+	// 	if math.Abs(t.Normal().Dot(e)) > 0.05 {
+	// 		continue
+	// 	}
+	// 	mesh.Lines = append(mesh.Lines, NewLine(t.V1, t.V2))
+	// 	mesh.Lines = append(mesh.Lines, NewLine(t.V2, t.V3))
+	// 	mesh.Lines = append(mesh.Lines, NewLine(t.V3, t.V1))
+	// }
+
 	for _, line := range mesh.Lines {
 		info := context.DrawLine(line)
 		ratio := float64(info.UpdatedPixels) / float64(info.TotalPixels)
@@ -73,4 +93,13 @@ func downloadAndParse(structureID string) ([]*pdb.Model, error) {
 		return nil, err
 	}
 	return pdb.NewReader(r).ReadAll()
+}
+
+func parse(path string) ([]*pdb.Model, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return pdb.NewReader(f).ReadAll()
 }
