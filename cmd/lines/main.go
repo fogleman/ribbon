@@ -75,7 +75,7 @@ func main() {
 		if math.IsNaN(v1.X) || math.IsNaN(v2.X) {
 			continue
 		}
-		fmt.Printf("%g,%g;%g,%g\n", v1.X*c.Aspect, v1.Y, v2.X*c.Aspect, v2.Y)
+		fmt.Printf("%g,%g %g,%g\n", v1.X*c.Aspect, v1.Y, v2.X*c.Aspect, v2.Y)
 	}
 }
 
