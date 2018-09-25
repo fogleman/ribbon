@@ -1,5 +1,7 @@
 package pdb
 
+import "math"
+
 type ResidueType int
 
 const (
@@ -62,4 +64,13 @@ func residuesForAtoms(atoms []*Atom, helixes []*Helix, strands []*Strand) []*Res
 		}
 	}
 	return residues
+}
+
+func (a *Residue) distance(b *Residue) float64 {
+	ca0 := a.AtomsByName["CA"]
+	ca1 := b.AtomsByName["CA"]
+	dx := ca0.X - ca1.X
+	dy := ca0.Y - ca1.Y
+	dz := ca0.Z - ca1.Z
+	return math.Sqrt(dx*dx + dy*dy + dz*dz)
 }

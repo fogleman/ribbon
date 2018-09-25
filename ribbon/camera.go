@@ -55,7 +55,7 @@ func PositionCamera(model *pdb.Model) Camera {
 
 func makeCamera(points []fauxgl.Vector) Camera {
 	const D = 1000
-	up := fauxgl.Vector{0, 0, 1}
+	up := fauxgl.Vector{1, 1, 1}.Normalize()
 
 	min := points[0]
 	max := points[0]
@@ -72,7 +72,26 @@ func makeCamera(points []fauxgl.Vector) Camera {
 	bestScore := 1e9
 	size := int(math.Sqrt(float64(len(points))))
 	for i := 0; i < 1000; i++ {
-		v := fauxgl.RandomUnitVector().MulScalar(D)
+		// v := fauxgl.RandomUnitVector().MulScalar(D)
+
+		// v := fauxgl.RandomUnitVector()
+		var v fauxgl.Vector
+		a := rand.Float64() * 2 * math.Pi
+		p := math.Cos(a)
+		q := math.Sin(a)
+		switch rand.Intn(3) {
+		case 0:
+			v.X = p
+			v.Y = q
+		case 1:
+			v.X = p
+			v.Z = q
+		case 2:
+			v.Y = p
+			v.Z = q
+		}
+		v = center.Add(v.Normalize().MulScalar(D))
+
 		m := fauxgl.LookAt(v, center, up).Perspective(fovyEstimate, 1, 1, 100)
 		score := cameraScore(points, m, size)
 		if score < bestScore {
@@ -80,6 +99,8 @@ func makeCamera(points []fauxgl.Vector) Camera {
 			eye = v
 		}
 	}
+	// d := eye.Sub(center)
+	// eye = center.Add(d.Negate())
 
 	bestAspect := 1.0
 	bestFovy := fovyEstimate

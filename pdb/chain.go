@@ -15,15 +15,17 @@ func newChain(residues []*Residue) *Chain {
 func chainsForResidues(residues []*Residue) []*Chain {
 	var chains []*Chain
 	var group []*Residue
-	previous := ""
+	previous := residues[0]
 	for _, residue := range residues {
-		value := residue.ChainID
-		if value != previous && group != nil {
-			chains = append(chains, newChain(group))
-			group = nil
+		distance := residue.distance(previous)
+		if residue.ChainID != previous.ChainID || distance > 4 {
+			if group != nil {
+				chains = append(chains, newChain(group))
+				group = nil
+			}
 		}
 		group = append(group, residue)
-		previous = value
+		previous = residue
 	}
 	if group != nil {
 		chains = append(chains, newChain(group))
