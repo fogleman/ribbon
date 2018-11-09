@@ -45,12 +45,12 @@ func main() {
 
 	matrix := LookAt(c.Eye, c.Center, c.Up).Perspective(c.Fovy, c.Aspect, 1, 10000)
 
-	context := NewContext(8192, 8192)
+	context := NewContext(8192*2, 8192*2)
 	context.Shader = NewSolidColorShader(matrix, Black)
 	context.DrawTriangles(mesh.Triangles)
 	SavePNG("out.png", context.Image())
 
-	context.DepthBias = -1e-8
+	context.DepthBias = -1e-7
 
 	// for _, t := range mesh.Triangles {
 	// 	e := t.V1.Position.Sub(c.Eye).Normalize()
