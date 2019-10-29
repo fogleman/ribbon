@@ -40,9 +40,9 @@ func newGaussianKernel3D(sigma, standardDeviations float64) (int, []float64) {
 		}
 	}
 
-	for i, w := range kernel {
-		kernel[i] = w / sum
-	}
+	// for i, w := range kernel {
+	// 	kernel[i] = w / sum
+	// }
 
 	return w, kernel
 }
@@ -79,11 +79,6 @@ func main() {
 	// get atom positions and radii
 	spheres := ribbon.Spheres(model)
 
-	// compute kernel
-	kw, kernel := newGaussianKernel3D(4, 3)
-	kr := kw / 2
-	kv := kernel[kr+kr*kw+kr*kw*kw]
-
 	// get bounding box of spheres
 	lo := spheres[0].Vector()
 	hi := spheres[0].Vector()
@@ -92,6 +87,11 @@ func main() {
 		hi = hi.Max(s.Vector())
 	}
 	size := hi.Sub(lo)
+
+	// compute kernel
+	sigma := math.Pow(size.X*size.Y*size.Z, 1.0/9)
+	fmt.Println(sigma)
+	kw, kernel := newGaussianKernel3D(sigma, 3)
 
 	// compute voxel bounds / sizes
 	const gs = 1
@@ -121,11 +121,23 @@ func main() {
 			}
 		}
 	}
+	maxGridValue := grid[0]
+	var sum, count float64
+	for _, v := range grid {
+		if v > 0 {
+			sum += v
+			count++
+		}
+		if v > maxGridValue {
+			maxGridValue = v
+		}
+	}
+	// meanGridValue := sum / count
 	done()
 
 	// run marching cubes
 	done = timed("running marching cubes")
-	mcTriangles := mc.MarchingCubesGrid(gw, gh, gd, grid, kv)
+	mcTriangles := mc.MarchingCubesGrid(gw, gh, gd, grid, maxGridValue*0.25)
 	done()
 
 	// convert to mesh
