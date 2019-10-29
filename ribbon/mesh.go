@@ -72,6 +72,42 @@ func HetMesh(model *pdb.Model) *fauxgl.Mesh {
 	return mesh
 }
 
+func Spheres(model *pdb.Model) []fauxgl.VectorW {
+	result := make([]fauxgl.VectorW, len(model.Atoms))
+	for i, a := range model.Atoms {
+		e := atomElement(a)
+		result[i].X = a.X
+		result[i].Y = a.Y
+		result[i].Z = a.Z
+		result[i].W = e.VanDerWaalsRadius
+	}
+
+	// base := make([]fauxgl.VectorW, len(result))
+	// copy(base, result)
+	// for _, m := range model.BioMatrixes {
+	// 	mat := fauxgl.Matrix{
+	// 		m[0][0], m[0][1], m[0][2], m[0][3],
+	// 		m[1][0], m[1][1], m[1][2], m[1][3],
+	// 		m[2][0], m[2][1], m[2][2], m[2][3],
+	// 		m[3][0], m[3][1], m[3][2], m[3][3],
+	// 	}
+	// 	if mat == fauxgl.Identity() {
+	// 		continue
+	// 	}
+	// 	a := make([]fauxgl.VectorW, len(base))
+	// 	for i, w := range base {
+	// 		v := mat.MulPosition(w.Vector())
+	// 		a[i].X = v.X
+	// 		a[i].Y = v.Y
+	// 		a[i].Z = v.Z
+	// 		a[i].W = w.W
+	// 	}
+	// 	result = append(result, a...)
+	// }
+
+	return result
+}
+
 func SpaceFillingMesh(model *pdb.Model) *fauxgl.Mesh {
 	mesh := fauxgl.NewEmptyMesh()
 	for _, a := range model.Atoms {
