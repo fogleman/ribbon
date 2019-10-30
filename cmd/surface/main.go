@@ -1,24 +1,25 @@
 package main
 
 import (
+	"bufio"
 	"compress/gzip"
 	"fmt"
 	"log"
 	"math"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	. "github.com/fogleman/fauxgl"
 	"github.com/fogleman/mc"
 	"github.com/fogleman/ribbon/pdb"
-	"github.com/fogleman/ribbon/ribbon"
 )
 
 const (
-	voxelSizeAngstroms = 0.5
-	sigmaAngstroms     = 4.
+	voxelSizeAngstroms = 1.
+	sigmaAngstroms     = 8.
 	thresholdAngstroms = 2.
 	truncate           = 3.
 
@@ -68,28 +69,35 @@ func main() {
 
 	var done func()
 
+	// done = timed("downloading pdb file")
+	// models, err := downloadAndParse(structureID)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// model := models[0]
+	// done()
+
+	// fmt.Printf("atoms       = %d\n", len(model.Atoms))
+	// fmt.Printf("residues    = %d\n", len(model.Residues))
+	// fmt.Printf("chains      = %d\n", len(model.Chains))
+	// fmt.Printf("helixes     = %d\n", len(model.Helixes))
+	// fmt.Printf("strands     = %d\n", len(model.Strands))
+	// fmt.Printf("het-atoms   = %d\n", len(model.HetAtoms))
+	// fmt.Printf("connections = %d\n", len(model.Connections))
+	// fmt.Printf("biomatrixes = %d\n", len(model.BioMatrixes))
+	// fmt.Printf("symmatrixes = %d\n", len(model.SymMatrixes))
+
+	// // get atom positions and radii
+	// spheres := ribbon.Spheres(model)
+
 	done = timed("downloading pdb file")
-	models, err := downloadAndParse(structureID)
+	spheres, err := downloadAndParseCIF(structureID)
+	done()
 	if err != nil {
 		log.Fatal(err)
 	}
-	model := models[0]
-	done()
-
-	fmt.Printf("atoms       = %d\n", len(model.Atoms))
-	fmt.Printf("residues    = %d\n", len(model.Residues))
-	fmt.Printf("chains      = %d\n", len(model.Chains))
-	fmt.Printf("helixes     = %d\n", len(model.Helixes))
-	fmt.Printf("strands     = %d\n", len(model.Strands))
-	fmt.Printf("het-atoms   = %d\n", len(model.HetAtoms))
-	fmt.Printf("connections = %d\n", len(model.Connections))
-	fmt.Printf("biomatrixes = %d\n", len(model.BioMatrixes))
-	fmt.Printf("symmatrixes = %d\n", len(model.SymMatrixes))
 
 	done = timed("computing bounds")
-
-	// get atom positions and radii
-	spheres := ribbon.Spheres(model)
 
 	// get bounding box of spheres
 	lo := spheres[0].Vector()
@@ -187,6 +195,35 @@ func downloadAndParse(structureID string) ([]*pdb.Model, error) {
 		return nil, err
 	}
 	return pdb.NewReader(r).ReadAll()
+}
+
+func downloadAndParseCIF(structureID string) ([]VectorW, error) {
+	url := fmt.Sprintf(
+		"https://files.rcsb.org/download/%s.cif.gz",
+		strings.ToUpper(structureID))
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	r, err := gzip.NewReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var result []VectorW
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		// fmt.Println(scanner.Text()) // Println will add back the final '\n'
+		fields := strings.Fields(scanner.Text())
+		if fields[0] != "ATOM" {
+			continue
+		}
+		x, _ := strconv.ParseFloat(fields[10], 64)
+		y, _ := strconv.ParseFloat(fields[11], 64)
+		z, _ := strconv.ParseFloat(fields[12], 64)
+		result = append(result, VectorW{x, y, z, 0})
+	}
+	return result, scanner.Err()
 }
 
 func timed(name string) func() {
