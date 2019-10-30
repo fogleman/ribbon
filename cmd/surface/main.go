@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	voxelSizeAngstroms = 1.
-	sigmaAngstroms     = 0.
+	voxelSizeAngstroms = 0.5
+	sigmaAngstroms     = 4.
 	thresholdAngstroms = 2.
 	truncate           = 3.
 
@@ -60,7 +60,7 @@ func newGaussianKernel3D(sigma, standardDeviations float64) (int, []float64) {
 func main() {
 	args := os.Args[1:]
 	if len(args) != 1 || len(args[0]) != 4 {
-		fmt.Println("Usage: metaballs XXXX")
+		fmt.Println("Usage: surface XXXX")
 		fmt.Println(" XXXX: 4-digit RCSB PDB Structure ID")
 		os.Exit(1)
 	}
@@ -115,6 +115,8 @@ func main() {
 
 	done()
 
+	fmt.Println(size)
+
 	// apply kernel
 	done = timed("applying kernel")
 	for _, s := range spheres {
@@ -157,12 +159,13 @@ func main() {
 	done = timed("converting to mesh")
 	triangles := make([]*Triangle, len(mcTriangles))
 	for i, t := range mcTriangles {
-		p1 := Vector(t.V1)
-		p2 := Vector(t.V2)
-		p3 := Vector(t.V3)
+		p1 := Vector(t.V1).MulScalar(voxelSizeAngstroms)
+		p2 := Vector(t.V2).MulScalar(voxelSizeAngstroms)
+		p3 := Vector(t.V3).MulScalar(voxelSizeAngstroms)
 		triangles[i] = NewTriangleForPoints(p1, p2, p3)
 	}
 	mesh := NewTriangleMesh(triangles)
+	// mesh.Transform(Rotate(V(1, 0, 0), Radians(-135)))
 	done()
 
 	done = timed("writing mesh to disk")
