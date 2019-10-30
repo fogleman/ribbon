@@ -16,6 +16,16 @@ import (
 	"github.com/fogleman/ribbon/ribbon"
 )
 
+const (
+	voxelSizeAngstroms = 1.
+	sigmaAngstroms     = 0.
+	thresholdAngstroms = 2.
+	truncate           = 3.
+
+	sigmaVoxels     = sigmaAngstroms / voxelSizeAngstroms
+	thresholdVoxels = thresholdAngstroms / voxelSizeAngstroms
+)
+
 func newGaussianKernel3D(sigma, standardDeviations float64) (int, []float64) {
 	r := int(math.Ceil(sigma * standardDeviations))
 	w := 2*r + 1
@@ -40,9 +50,9 @@ func newGaussianKernel3D(sigma, standardDeviations float64) (int, []float64) {
 		}
 	}
 
-	// for i, w := range kernel {
-	// 	kernel[i] = w / sum
-	// }
+	for i, w := range kernel {
+		kernel[i] = w / sum
+	}
 
 	return w, kernel
 }
@@ -73,6 +83,8 @@ func main() {
 	fmt.Printf("strands     = %d\n", len(model.Strands))
 	fmt.Printf("het-atoms   = %d\n", len(model.HetAtoms))
 	fmt.Printf("connections = %d\n", len(model.Connections))
+	fmt.Printf("biomatrixes = %d\n", len(model.BioMatrixes))
+	fmt.Printf("symmatrixes = %d\n", len(model.SymMatrixes))
 
 	done = timed("computing bounds")
 
@@ -89,15 +101,16 @@ func main() {
 	size := hi.Sub(lo)
 
 	// compute kernel
-	sigma := math.Pow(size.X*size.Y*size.Z, 1.0/9)
-	fmt.Println(sigma)
-	kw, kernel := newGaussianKernel3D(sigma, 3)
+	sigma := sigmaVoxels
+	if sigma <= 0 {
+		sigma = math.Pow(size.X*size.Y*size.Z, 1.0/9) / voxelSizeAngstroms
+	}
+	kw, kernel := newGaussianKernel3D(sigma, truncate)
 
 	// compute voxel bounds / sizes
-	const gs = 1
-	gw := int(math.Ceil(size.X/gs)) + kw
-	gh := int(math.Ceil(size.Y/gs)) + kw
-	gd := int(math.Ceil(size.Z/gs)) + kw
+	gw := int(math.Ceil(size.X/voxelSizeAngstroms)) + kw
+	gh := int(math.Ceil(size.Y/voxelSizeAngstroms)) + kw
+	gd := int(math.Ceil(size.Z/voxelSizeAngstroms)) + kw
 	grid := make([]float64, gw*gh*gd)
 
 	done()
@@ -105,9 +118,9 @@ func main() {
 	// apply kernel
 	done = timed("applying kernel")
 	for _, s := range spheres {
-		x0 := int((s.X - lo.X) / gs)
-		y0 := int((s.Y - lo.Y) / gs)
-		z0 := int((s.Z - lo.Z) / gs)
+		x0 := int((s.X - lo.X) / voxelSizeAngstroms)
+		y0 := int((s.Y - lo.Y) / voxelSizeAngstroms)
+		z0 := int((s.Z - lo.Z) / voxelSizeAngstroms)
 		for dz := 0; dz < kw; dz++ {
 			for dy := 0; dy < kw; dy++ {
 				for dx := 0; dx < kw; dx++ {
@@ -121,23 +134,23 @@ func main() {
 			}
 		}
 	}
-	maxGridValue := grid[0]
-	var sum, count float64
-	for _, v := range grid {
-		if v > 0 {
-			sum += v
-			count++
-		}
-		if v > maxGridValue {
-			maxGridValue = v
-		}
-	}
-	// meanGridValue := sum / count
 	done()
+
+	// compute threshold
+	var sum, count float64
+	for _, s := range spheres {
+		x := int((s.X - lo.X) / voxelSizeAngstroms)
+		y := int((s.Y - lo.Y) / voxelSizeAngstroms)
+		z := int((s.Z - lo.Z) / voxelSizeAngstroms)
+		sum += grid[x+y*gw+z*gw*gh]
+		count++
+	}
+	pct := math.Exp(-thresholdVoxels * thresholdVoxels / (2 * sigma * sigma))
+	threshold := sum / count * pct
 
 	// run marching cubes
 	done = timed("running marching cubes")
-	mcTriangles := mc.MarchingCubesGrid(gw, gh, gd, grid, maxGridValue*0.25)
+	mcTriangles := mc.MarchingCubesGrid(gw, gh, gd, grid, threshold)
 	done()
 
 	// convert to mesh
