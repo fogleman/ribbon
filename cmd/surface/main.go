@@ -15,12 +15,13 @@ import (
 	. "github.com/fogleman/fauxgl"
 	"github.com/fogleman/mc"
 	"github.com/fogleman/ribbon/pdb"
+	"github.com/fogleman/ribbon/ribbon"
 )
 
 const (
 	voxelSizeAngstroms = 1.
-	sigmaAngstroms     = 8.
-	thresholdAngstroms = 2.
+	sigmaAngstroms     = 4.
+	thresholdAngstroms = 4.
 	truncate           = 3.
 
 	sigmaVoxels     = sigmaAngstroms / voxelSizeAngstroms
@@ -51,9 +52,9 @@ func newGaussianKernel3D(sigma, standardDeviations float64) (int, []float64) {
 		}
 	}
 
-	for i, w := range kernel {
-		kernel[i] = w / sum
-	}
+	// for i, w := range kernel {
+	// 	kernel[i] = w / sum
+	// }
 
 	return w, kernel
 }
@@ -69,33 +70,33 @@ func main() {
 
 	var done func()
 
-	// done = timed("downloading pdb file")
-	// models, err := downloadAndParse(structureID)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// model := models[0]
-	// done()
-
-	// fmt.Printf("atoms       = %d\n", len(model.Atoms))
-	// fmt.Printf("residues    = %d\n", len(model.Residues))
-	// fmt.Printf("chains      = %d\n", len(model.Chains))
-	// fmt.Printf("helixes     = %d\n", len(model.Helixes))
-	// fmt.Printf("strands     = %d\n", len(model.Strands))
-	// fmt.Printf("het-atoms   = %d\n", len(model.HetAtoms))
-	// fmt.Printf("connections = %d\n", len(model.Connections))
-	// fmt.Printf("biomatrixes = %d\n", len(model.BioMatrixes))
-	// fmt.Printf("symmatrixes = %d\n", len(model.SymMatrixes))
-
-	// // get atom positions and radii
-	// spheres := ribbon.Spheres(model)
-
 	done = timed("downloading pdb file")
-	spheres, err := downloadAndParseCIF(structureID)
-	done()
+	models, err := downloadAndParse(structureID)
 	if err != nil {
 		log.Fatal(err)
 	}
+	model := models[0]
+	done()
+
+	fmt.Printf("atoms       = %d\n", len(model.Atoms))
+	fmt.Printf("residues    = %d\n", len(model.Residues))
+	fmt.Printf("chains      = %d\n", len(model.Chains))
+	fmt.Printf("helixes     = %d\n", len(model.Helixes))
+	fmt.Printf("strands     = %d\n", len(model.Strands))
+	fmt.Printf("het-atoms   = %d\n", len(model.HetAtoms))
+	fmt.Printf("connections = %d\n", len(model.Connections))
+	fmt.Printf("biomatrixes = %d\n", len(model.BioMatrixes))
+	fmt.Printf("symmatrixes = %d\n", len(model.SymMatrixes))
+
+	// get atom positions and radii
+	spheres := ribbon.Spheres(model)
+
+	// done = timed("downloading pdb file")
+	// spheres, err := downloadAndParseCIF(structureID)
+	// done()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	done = timed("computing bounds")
 
@@ -114,6 +115,7 @@ func main() {
 		sigma = math.Pow(size.X*size.Y*size.Z, 1.0/9) / voxelSizeAngstroms
 	}
 	kw, kernel := newGaussianKernel3D(sigma, truncate)
+	kr := kw / 2
 
 	// compute voxel bounds / sizes
 	gw := int(math.Ceil(size.X/voxelSizeAngstroms)) + kw
@@ -149,9 +151,9 @@ func main() {
 	// compute threshold
 	var sum, count float64
 	for _, s := range spheres {
-		x := int((s.X - lo.X) / voxelSizeAngstroms)
-		y := int((s.Y - lo.Y) / voxelSizeAngstroms)
-		z := int((s.Z - lo.Z) / voxelSizeAngstroms)
+		x := int((s.X-lo.X)/voxelSizeAngstroms) + kr
+		y := int((s.Y-lo.Y)/voxelSizeAngstroms) + kr
+		z := int((s.Z-lo.Z)/voxelSizeAngstroms) + kr
 		sum += grid[x+y*gw+z*gw*gh]
 		count++
 	}
@@ -166,19 +168,36 @@ func main() {
 	// convert to mesh
 	done = timed("converting to mesh")
 	triangles := make([]*Triangle, len(mcTriangles))
+	transform := Translate(lo).Translate(V(-float64(kr), -float64(kr), -float64(kr))).Scale(V(voxelSizeAngstroms, voxelSizeAngstroms, voxelSizeAngstroms))
 	for i, t := range mcTriangles {
-		p1 := Vector(t.V1).MulScalar(voxelSizeAngstroms)
-		p2 := Vector(t.V2).MulScalar(voxelSizeAngstroms)
-		p3 := Vector(t.V3).MulScalar(voxelSizeAngstroms)
+		p1 := transform.MulPosition(Vector(t.V1))
+		p2 := transform.MulPosition(Vector(t.V2))
+		p3 := transform.MulPosition(Vector(t.V3))
 		triangles[i] = NewTriangleForPoints(p1, p2, p3)
 	}
 	mesh := NewTriangleMesh(triangles)
-	// mesh.Transform(Rotate(V(1, 0, 0), Radians(-135)))
+
+	// sphere := NewSphere(1)
+	// for _, s := range spheres {
+	// 	m := sphere.Copy()
+	// 	m.Transform(Translate(s.Vector()))
+	// 	mesh.Add(m)
+	// }
+
 	done()
 
 	done = timed("writing mesh to disk")
 	mesh.SaveSTL(fmt.Sprintf("%s.stl", structureID))
 	done()
+
+	// for z := 0; z < gd; z++ {
+	// 	im := image.NewGray(image.Rect(0, 0, gw, gh))
+	// 	slice := grid[z*(gw*gh) : (z+1)*(gw*gh)]
+	// 	for i, v := range slice {
+	// 		im.Pix[i] = uint8(v / maxGridValue * 255)
+	// 	}
+	// 	gg.SavePNG(fmt.Sprintf("%08d.png", z), im)
+	// }
 }
 
 func downloadAndParse(structureID string) ([]*pdb.Model, error) {
