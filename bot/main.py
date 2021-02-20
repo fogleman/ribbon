@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import random
 import requests
@@ -5,7 +7,6 @@ import subprocess
 import time
 import traceback
 import twitter
-import xml.etree.ElementTree as ET
 
 RATE = 60 * 30
 
@@ -17,7 +18,7 @@ TWITTER_ACCESS_TOKEN_SECRET = None
 try:
     from config import *
 except ImportError:
-    print 'no config found!'
+    print('no config found!')
 
 def rcsb(structure_id):
     cmd = 'rcsb %s' % structure_id
@@ -40,14 +41,12 @@ def random_structure_id():
         return random.choice(lines).strip().upper()
 
 def structure_title(structure_id):
-    url = 'http://www.rcsb.org/pdb/rest/describePDB?structureId=%s' % structure_id
+    url = 'https://data.rcsb.org/rest/v1/core/entry/%s' % structure_id
     r = requests.get(url)
-    root = ET.fromstring(r.content)
-    for pdb in root.findall('PDB'):
-        return pdb.attrib.get('title')
+    return r.json()['rcsb_primary_citation']['title']
 
 def structure_url(structure_id):
-    return 'http://www.rcsb.org/pdb/explore.do?structureId=%s' % structure_id
+    return 'https://www.rcsb.org/structure/%s' % structure_id
 
 def trunctate_text(text, max_length):
     if len(text) > max_length:
@@ -63,16 +62,16 @@ def tweet_text(structure_id):
 def generate():
     structure_id = random_structure_id()
     status_text = tweet_text(structure_id)
-    print status_text
+    print(status_text)
     out_path = '%s.png' % structure_id
-    print 'rendering image'
+    print('rendering image')
     rcsb(structure_id)
     if os.path.exists(out_path):
-        print 'uploading to twitter'
+        print('uploading to twitter')
         tweet(status_text, out_path)
-        print 'done'
+        print('done')
     else:
-        print 'failed'
+        print('failed')
 
 def main():
     previous = 0
