@@ -43,7 +43,7 @@ def random_structure_id():
 def structure_title(structure_id):
     url = 'https://data.rcsb.org/rest/v1/core/entry/%s' % structure_id
     r = requests.get(url)
-    return r.json()['rcsb_primary_citation']['title']
+    return r.json()['struct']['title']
 
 def structure_url(structure_id):
     return 'https://www.rcsb.org/structure/%s' % structure_id
