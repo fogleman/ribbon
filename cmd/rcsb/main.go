@@ -98,6 +98,9 @@ func downloadAndParse(structureID string) ([]*pdb.Model, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if code := resp.StatusCode; code != 200 {
+		return nil, fmt.Errorf("error %d while GETing %s", code, structureID)
+	}
 	r, err := gzip.NewReader(resp.Body)
 	if err != nil {
 		return nil, err

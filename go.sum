@@ -1,0 +1,10 @@
+github.com/fogleman/ease v0.0.0-20170301025033-8da417bf1776 h1:VRIbnDWRmAh5yBdz+J6yFMF5vso1It6vn+WmM/5l7MA=
+github.com/fogleman/ease v0.0.0-20170301025033-8da417bf1776/go.mod h1:9wvnDu3YOfxzWM9Cst40msBF1C2UdQgDv962oTxSuMs=
+github.com/fogleman/fauxgl v0.0.0-20200818143847-27cddc103802 h1:5vdq0jOnV15v1NdZbAcU+dIJ22rFgwaieiFewPvnKCA=
+github.com/fogleman/fauxgl v0.0.0-20200818143847-27cddc103802/go.mod h1:7f7F8EvO8MWvDx9sIoloOfZBCKzlWuZV/h3TjpXOO3k=
+github.com/fogleman/mc v0.0.0-20200516034030-c30b20ace55a h1:ITrp9WHc4bZYIMyXOL9o6M7v06cqZysOY8ToKfdJJgU=
+github.com/fogleman/mc v0.0.0-20200516034030-c30b20ace55a/go.mod h1:u8RqaMl2hN0XMPpPwzSOvUjYyyS2Rihdl1wqrxIspUk=
+github.com/fogleman/simplify v0.0.0-20170216171241-d32f302d5046 h1:n3RPbpwXSFT0G8FYslzMUBDO09Ix8/dlqzvUkcJm4Jk=
+github.com/fogleman/simplify v0.0.0-20170216171241-d32f302d5046/go.mod h1:KDwyDqFmVUxUmo7tmqXtyaaJMdGon06y8BD2jmh84CQ=
+github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 h1:zYyBkD/k9seD2A7fsi6Oo2LfFZAehjjQMERAvZLEDnQ=
+github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
